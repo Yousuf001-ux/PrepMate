@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SessionStatus {
+  pending
+  complete
+  missed
+}
+
+enum TopicPriority {
+  high
+  medium
+  low
+}
+
+model User {
+  id              String           @id @default(uuid())
+  email           String           @unique
+  name            String
+  passwordHash    String
+  courses         Course[]
+  studyPlans      StudyPlan[]
+  quizAttempts    QuizAttempt[]
+  progressRecords ProgressRecord[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model Course {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  examDate  DateTime
+  topics    Topic[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Topic {
+  id        String         @id @default(uuid())
+  courseId  String
+  course    Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  name      String
+  priority  TopicPriority  @default(medium)
+  isWeak    Boolean        @default(false)
+  sessions  StudySession[]
+  quizzes   Quiz[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([courseId])
+}
+
+model StudyPlan {
+  id        String         @id @default(uuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions  StudySession[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([userId])
+}
+
+model StudySession {
+  id              String         @id @default(uuid())
+  studyPlanId     String
+  studyPlan       StudyPlan      @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+  topicId         String
+  topic           Topic          @relation(fields: [topicId], references: [id], onDelete: Restrict)
+  scheduledDate   DateTime
+  durationMinutes Int
+  status          SessionStatus  @default(pending)
+  tasks           Task[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([studyPlanId])
+  @@index([topicId])
+  @@index([status])
+  @@index([scheduledDate])
+}
+
+model Task {
+  id          String       @id @default(uuid())
+  sessionId   String
+  session     StudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  description String
+  isComplete  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([sessionId])
+}
+
+model Quiz {
+  id        String        @id @default(uuid())
+  topicId   String
+  topic     Topic         @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  questions Json
+  attempts  QuizAttempt[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([topicId])
+}
+
+model QuizAttempt {
+  id        String   @id @default(uuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score     Int      @default(0)
+  answers   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([quizId])
+  @@index([userId])
+}
+
+model ProgressRecord {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date              DateTime
+  sessionsPlanned   Int
+  sessionsCompleted Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId, date])
+  @@index([date])
+}
