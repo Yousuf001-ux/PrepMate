@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { manrope } from "@/lib/fonts";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,7 +20,9 @@ export default function RootLayout({
       className={`${manrope.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+        <TooltipProvider delay={0}>
+          {children}
+        </TooltipProvider>
         <Toaster closeButton position="top-right" />
       </body>
     </html>
