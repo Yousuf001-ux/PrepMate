@@ -36,29 +36,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2 text-center">
-        <h1 className="text-headline-medium text-foreground">Welcome back</h1>
-        <p className="text-body-small text-muted-foreground">
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col items-center text-center">
+        <h1 className="text-headline-large text-foreground font-semibold">Welcome back</h1>
+        <p className="text-body-medium text-muted-foreground">
           Sign in to your PrepMate account
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email">Email</Label>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="email">Your email</Label>
           <Input
             id="email"
             type="email"
-            placeholder="you@example.com"
+            placeholder="e.g. you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            autoComplete="email"
+            autoComplete="off"
+            autoFocus
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
             <Link
@@ -75,15 +76,15 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            autoComplete="current-password"
+            autoComplete="new-password"
           />
         </div>
 
         {error && (
-          <p className="text-destructive text-sm text-center">{error}</p>
+          <p className="text-destructive text-body-small text-center">{error}</p>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full h-12" disabled={loading}>
           {loading ? "Signing in..." : "Sign in"}
         </Button>
       </form>

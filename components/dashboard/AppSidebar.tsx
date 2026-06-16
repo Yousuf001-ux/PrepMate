@@ -63,7 +63,7 @@ export function AppSidebar() {
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-semibold">PrepMate</span>
-                <span className="text-xs text-muted-foreground">AI Study Planner</span>
+                <span className="text-label-small text-muted-foreground">AI Study Planner</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -100,15 +100,15 @@ export function AppSidebar() {
                 render={
                   <SidebarMenuButton size="lg" className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground">
                     <Avatar className="size-8 rounded-lg">
-                      <AvatarFallback className="rounded-lg text-xs">
+                      <AvatarFallback className="rounded-lg text-label-small">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
+                    <div className="grid flex-1 text-left text-label-medium leading-tight">
                       <span className="truncate font-semibold">
                         {session?.user?.name ?? "User"}
                       </span>
-                      <span className="truncate text-xs text-muted-foreground">
+                      <span className="truncate text-label-small text-muted-foreground">
                         {session?.user?.email ?? ""}
                       </span>
                     </div>
@@ -120,7 +120,7 @@ export function AppSidebar() {
                 side="top"
                 className="w-(--radix-popper-anchor-width)"
               >
-                <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+                <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
                   <LogOut />
                   Sign out
                 </DropdownMenuItem>

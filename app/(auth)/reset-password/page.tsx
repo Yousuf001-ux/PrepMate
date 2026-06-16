@@ -56,7 +56,7 @@ function ResetPasswordForm() {
         <p className="text-body-small text-muted-foreground">
           This password reset link is invalid or has expired.
         </p>
-        <Link href="/forgot-password" className="text-primary text-sm hover:underline">
+        <Link href="/forgot-password" className="text-primary text-label-medium hover:underline">
           Request a new link
         </Link>
       </div>
@@ -88,7 +88,7 @@ function ResetPasswordForm() {
         </div>
 
         {error && (
-          <p className="text-destructive text-sm text-center">{error}</p>
+          <p className="text-destructive text-body-small text-center">{error}</p>
         )}
 
         <Button type="submit" className="w-full" disabled={loading}>

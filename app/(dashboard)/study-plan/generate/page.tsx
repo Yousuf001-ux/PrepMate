@@ -85,7 +85,7 @@ export default function GeneratePlanPage() {
             </div>
 
             {error && (
-              <p className="text-destructive text-sm">{error}</p>
+              <p className="text-destructive text-body-small">{error}</p>
             )}
 
             <Button type="submit" disabled={loading} className="self-start">

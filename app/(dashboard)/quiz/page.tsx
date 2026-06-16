@@ -90,7 +90,7 @@ export default function QuizPage() {
           </Select>
         </div>
 
-        {error && <p className="text-destructive text-sm">{error}</p>}
+        {error && <p className="text-destructive text-body-small">{error}</p>}
 
         <Button type="submit" disabled={loading || !topic.trim()}>
           {loading ? (
