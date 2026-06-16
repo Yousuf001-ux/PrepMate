@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { manrope } from "@/lib/fonts";
+import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
@@ -18,11 +19,14 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${manrope.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <TooltipProvider delay={0}>
-          {children}
-        </TooltipProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <TooltipProvider delay={0}>
+            {children}
+          </TooltipProvider>
+        </ThemeProvider>
         <Toaster closeButton position="top-right" />
       </body>
     </html>

@@ -38,6 +38,7 @@ export const authOptions: AuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
+          onboardingCompleted: user.onboardingCompleted,
         };
       },
     }),
@@ -47,15 +48,21 @@ export const authOptions: AuthOptions = {
     maxAge: 7 * 24 * 60 * 60, // 7 days (sliding)
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
+        token.onboardingCompleted = user.onboardingCompleted;
+      }
+      // Update token if session is updated manually
+      if (trigger === "update" && session?.onboardingCompleted !== undefined) {
+        token.onboardingCompleted = session.onboardingCompleted;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.onboardingCompleted = token.onboardingCompleted as boolean;
       }
       return session;
     },

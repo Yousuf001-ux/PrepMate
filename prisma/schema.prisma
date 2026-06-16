@@ -24,12 +24,14 @@ model User {
   email           String           @unique
   name            String
   passwordHash    String
-  courses         Course[]
-  studyPlans      StudyPlan[]
-  quizAttempts    QuizAttempt[]
-  progressRecords ProgressRecord[]
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  courses             Course[]
+  studyPlans          StudyPlan[]
+  quizAttempts        QuizAttempt[]
+  progressRecords     ProgressRecord[]
+  summaries           Summary[]
+  onboardingCompleted Boolean          @default(false)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
 }
 
 model Course {
@@ -141,4 +143,16 @@ model ProgressRecord {
 
   @@index([userId, date])
   @@index([date])
+}
+
+model Summary {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
