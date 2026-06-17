@@ -16,11 +16,27 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<OnboardingStep>("WELCOME");
 
   return (
-    <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center">
-      {step === "WELCOME" && <WelcomeScreen onSelectGoal={setStep} />}
-      {step === "STUDY_PLAN" && <StudyPlanFlow onBack={() => setStep("WELCOME")} />}
-      {step === "SUMMARIZE_TOPIC" && <SummarizeTopicFlow onBack={() => setStep("WELCOME")} />}
-      {step === "GENERATE_QUIZ" && <GenerateQuizFlow onBack={() => setStep("WELCOME")} />}
+    <div className="flex-1 flex flex-col items-center w-full">
+      {step === "WELCOME" && (
+        <div className="flex-1 flex items-center justify-center w-full max-w-3xl mx-auto">
+          <WelcomeScreen onSelectGoal={setStep} />
+        </div>
+      )}
+      {step === "STUDY_PLAN" && (
+        <div className="flex-1 flex flex-col w-full">
+          <StudyPlanFlow onBack={() => setStep("WELCOME")} />
+        </div>
+      )}
+      {step === "SUMMARIZE_TOPIC" && (
+        <div className="flex-1 flex flex-col w-full">
+          <SummarizeTopicFlow onBack={() => setStep("WELCOME")} />
+        </div>
+      )}
+      {step === "GENERATE_QUIZ" && (
+        <div className="flex-1 flex flex-col w-full">
+          <GenerateQuizFlow onBack={() => setStep("WELCOME")} />
+        </div>
+      )}
     </div>
   );
 }

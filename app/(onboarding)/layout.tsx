@@ -9,7 +9,7 @@ export default function OnboardingLayout({
 }) {
   return (
     <SessionProvider>
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex flex-col items-center px-4 pt-4">
         {children}
       </div>
     </SessionProvider>
