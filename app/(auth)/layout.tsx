@@ -9,13 +9,10 @@ export default function AuthLayout({
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <Link
         href="/"
-        className="text-primary"
+        className="text-primary absolute top-4 left-10 max-sm:left-4"
         style={{
           fontSize: "var(--font-headline-headline-small-font-size)",
           letterSpacing: "var(--font-headline-headline-medium-letter-spacing)",
-          position: "absolute",
-          top: 16,
-          left: 40,
         }}
       >
         PrepMate AI

@@ -183,6 +183,18 @@ export async function completeOnboarding(input: OnboardingInput) {
     return { success: false as const, error: "Invalid flow" };
   } catch (error) {
     console.error("[onboarding]", error);
-    return { success: false as const, error: "Failed to complete onboarding" };
+    const message =
+      error instanceof Error
+        ? error.message.includes("fetch failed") || error.message.includes("ENOTFOUND")
+          ? "We couldn't reach the AI service. Check your internet connection and try again."
+          : error.message.includes("429") || error.message.includes("rate limit")
+          ? "The AI service is busy right now. Give it a moment and try again."
+          : error.message.includes("timeout") || error.message.includes("timed out")
+          ? "The AI took too long to respond. Please try again — it usually works on the second go."
+          : /placeholder|API_KEY|apiKey|secret/i.test(error.message)
+          ? "The AI service isn't configured yet. Contact the admin to set it up."
+          : "Something went wrong while creating your plan. Try again."
+        : "An unexpected issue came up while creating your plan. Try again.";
+    return { success: false as const, error: message };
   }
 }

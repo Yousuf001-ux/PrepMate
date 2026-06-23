@@ -19,7 +19,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleStep1(e: React.FormEvent) {
+  function handleStep1(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!name.trim() || !email.trim()) {

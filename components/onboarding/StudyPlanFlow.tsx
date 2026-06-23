@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { NumberCounter } from "@/components/onboarding/NumberCounter";
 import { completeOnboarding } from "@/actions/onboarding";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 export interface CourseInputData {
@@ -27,6 +28,7 @@ type Step = "COURSE_COUNT" | "COURSE_DETAILS" | "AVAILABILITY" | "PROCESSING";
 
 export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
   const router = useRouter();
+  const { update } = useSession();
   const [step, setStep] = useState<Step>("COURSE_COUNT");
   const [courseCount, setCourseCount] = useState(1);
   const [courses, setCourses] = useState<CourseInputData[]>([]);
@@ -49,15 +51,20 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
   };
 
   const handleNextToAvailability = () => {
-    // Validate courses
-    for (const course of courses) {
-      if (!course.name.trim() || !course.examDate) {
-        toast.error("Please fill in all course names and exam dates.");
+    for (let i = 0; i < courses.length; i++) {
+      const course = courses[i];
+      const courseLabel = `Course ${i + 1}`;
+      if (!course.name.trim()) {
+        toast.error(`${courseLabel} is missing a name — give it a label so we can plan around it.`);
+        return;
+      }
+      if (!course.examDate) {
+        toast.error(`${courseLabel} ("${course.name.trim()}") needs an exam date so we know when to finish.`);
         return;
       }
       const validTopics = course.topics.filter(t => t.trim() !== "");
       if (validTopics.length === 0) {
-        toast.error(`Please add at least one topic for ${course.name}`);
+        toast.error(`${courseLabel} ("${course.name.trim()}") needs at least one topic to study.`);
         return;
       }
     }
@@ -82,14 +89,15 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
       });
 
       if (result.success) {
+        await update({ onboardingCompleted: true });
         router.push("/dashboard");
       } else {
-        toast.error(result.error || "Failed to generate study plan");
+        toast.error(result.error || "Something went wrong while building your study plan. Let's try again.");
         setStep("AVAILABILITY");
       }
     } catch (error) {
       console.error(error);
-      toast.error("An unexpected error occurred");
+      toast.error("A network or system error interrupted us. Your courses are saved — just hit generate again.");
       setStep("AVAILABILITY");
     }
   };
@@ -148,21 +156,26 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
         <Progress value={progress} className="h-2 w-full" />
       </div>
 
-      <div className="flex-1 flex items-center justify-center w-full">
+      <div className="flex-1 flex items-center justify-center w-full max-sm:flex-col max-sm:pt-4">
         {step === "COURSE_COUNT" && (
-          <div className="flex flex-col items-center space-y-12">
-            <h2 className="text-headline-large text-foreground font-medium text-center">
+          <div className="flex flex-col items-center space-y-12 max-sm:pb-24">
+            <h2 className="text-headline-medium text-foreground font-medium text-center">
               How many courses are you taking?
             </h2>
             <NumberCounter value={courseCount} min={1} max={20} onChange={setCourseCount} />
-            <Button size="lg" className="w-full md:w-auto mt-8 rounded-full px-8 h-14" onClick={handleNextToDetails}>
+            <Button size="lg" className="hidden sm:flex w-full md:w-auto mt-8 rounded-full px-8 h-14" onClick={handleNextToDetails}>
               Next
             </Button>
+            <div className="fixed bottom-0 left-0 w-full px-4 py-4 bg-background/80 backdrop-blur-md flex justify-start z-10 sm:hidden">
+              <Button size="lg" className="w-full rounded-full px-8 h-14" onClick={handleNextToDetails}>
+                Next
+              </Button>
+            </div>
           </div>
         )}
 
         {step === "COURSE_DETAILS" && (
-          <div className="flex flex-col items-center w-full space-y-10 pb-24">
+          <div className="flex flex-col items-center w-full md:w-[60%] px-4 md:px-0 space-y-10 pb-24">
             <h2 className="text-headline-medium text-foreground font-medium text-left w-full mb-0">
               Tell us about your courses
             </h2>
@@ -232,7 +245,7 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
 
         {step === "AVAILABILITY" && (
           <div className="flex flex-col items-center space-y-12">
-            <h2 className="text-headline-large text-foreground font-medium text-center">
+            <h2 className="text-headline-medium text-foreground font-medium text-center">
               How many hours can you study per day?
             </h2>
             <NumberCounter value={hoursPerDay} min={1} max={16} onChange={setHoursPerDay} />

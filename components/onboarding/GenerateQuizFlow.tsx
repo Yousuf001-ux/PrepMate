@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowLeft, Plus, FileText, X } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { ArrowLeft, Plus, FileText, X, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NumberCounter } from "@/components/onboarding/NumberCounter";
 import { completeOnboarding } from "@/actions/onboarding";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 interface GenerateQuizFlowProps {
@@ -16,10 +16,12 @@ interface GenerateQuizFlowProps {
 
 export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
   const router = useRouter();
+  const { update } = useSession();
   const [topic, setTopic] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [questionCount, setQuestionCount] = useState(10);
+  const [questionCount, setQuestionCount] = useState<number | "">("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectOpen, setSelectOpen] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -38,6 +40,10 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
       toast.error("Please provide a topic description or upload a file.");
       return;
     }
+    if (questionCount === "") {
+      toast.error("Please select the number of questions.");
+      return;
+    }
 
     setIsProcessing(true);
     try {
@@ -45,14 +51,12 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
         flow: "GENERATE_QUIZ",
         data: {
           topic: topic || (file ? `Generate a quiz about the content of ${file.name}` : "Unknown topic"),
-          questionCount
+          questionCount: questionCount === "" ? 10 : questionCount
         }
       });
 
       if (result.success && result.data && "quizId" in result.data) {
-        // In full app, we might redirect to `/quiz/${result.data.quizId}`. For MVP, we redirect to dashboard.
-        // Or if we have a quiz attempting page we can go there. The prompt said "Redirect user to Quiz Experience".
-        // If there's no page yet, dashboard is safe.
+        await update({ onboardingCompleted: true });
         router.push("/dashboard"); 
       } else {
         toast.error(result.error || "Failed to generate quiz");
@@ -89,8 +93,8 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
         </h2>
         
         <div className="w-full flex flex-col md:flex-row gap-6 items-start">
-          <div className="w-full md:w-[70%] p-2 border border-border bg-surface rounded-2xl flex flex-col items-start gap-2 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-            <div className="flex w-full items-center gap-2">
+          <div className="w-full md:w-[70%] p-2 border border-muted-foreground/20 bg-surface rounded-full flex flex-col items-start gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
+            <div className="flex w-full items-center gap-0">
               <div className="relative">
                 <input 
                   type="file" 
@@ -108,7 +112,7 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
               </div>
               
               <Input 
-                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-large px-4 h-14"
+                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-large pl-0 pr-4 h-14 truncate"
                 placeholder="What topic should the quiz be about?"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
@@ -126,18 +130,116 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
             )}
           </div>
 
-          <div className="w-full md:w-[30%] flex flex-col items-center justify-center gap-2 bg-surface border border-border rounded-2xl p-4">
-            <span className="text-label-large text-muted-foreground">Questions</span>
-            <NumberCounter value={questionCount} min={5} max={50} onChange={setQuestionCount} />
-          </div>
+          <QuestionCountDropdown
+            value={questionCount}
+            onChange={setQuestionCount}
+            open={selectOpen}
+            onOpenChange={setSelectOpen}
+          />
         </div>
 
-        <div className="fixed bottom-0 left-0 w-full p-4 bg-background/80 backdrop-blur-md border-t border-border flex justify-center z-10">
-          <Button size="lg" className="w-full max-w-sm rounded-full" onClick={handleGenerate}>
+        <div className="fixed bottom-0 left-0 w-full p-4 bg-background/80 backdrop-blur-md flex justify-center z-10">
+          <Button size="lg" className="w-full md:w-auto rounded-full px-8 h-14" onClick={handleGenerate}>
             Generate Quiz
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+const options = [5, 10, 15, 20, 25, 30];
+
+interface QuestionCountDropdownProps {
+  value: number | "";
+  onChange: (value: number | "") => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function QuestionCountDropdown({ value, onChange, open, onOpenChange }: QuestionCountDropdownProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [focusIndex, setFocusIndex] = useState(-1);
+
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      onOpenChange(false);
+    }
+  }, [onOpenChange]);
+
+  useEffect(() => {
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [open, handleClickOutside]);
+
+  const selectedValue = value === "" ? null : value;
+
+  return (
+    <div ref={containerRef} className="relative w-full md:w-[30%]">
+      <div className="p-2 border border-muted-foreground/20 bg-surface rounded-full focus-within:ring-3 focus-within:ring-ring/50 transition-all">
+        <button
+          type="button"
+          onClick={() => onOpenChange(!open)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onOpenChange(!open);
+            }
+            if (e.key === "ArrowDown" && open) {
+              e.preventDefault();
+              setFocusIndex((prev) => Math.min(prev + 1, options.length - 1));
+            }
+            if (e.key === "ArrowUp" && open) {
+              e.preventDefault();
+              setFocusIndex((prev) => Math.max(prev - 1, 0));
+            }
+            if (e.key === "Escape" && open) {
+              onOpenChange(false);
+            }
+          }}
+          className="w-full h-14 rounded-full border-none bg-transparent flex items-center gap-2 focus-visible:outline-none transition-all"
+        >
+          <span className={`flex-1 text-left text-[0.875rem] pl-2 truncate ${value === "" ? "text-muted-foreground/50" : "text-foreground"}`}>
+            {value === "" ? "Number of questions" : value}
+          </span>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 mr-1 ${open ? "rotate-180" : ""}`} />
+        </button>
+      </div>
+
+      {open && (
+        <div
+          className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 bg-popover text-popover-foreground rounded-xl border border-muted-foreground/20 shadow-none p-1.5 origin-top animate-in fade-in-0 zoom-in-95 transition-all duration-150"
+          role="listbox"
+        >
+          {options.map((n, i) => (
+            <button
+              key={n}
+              type="button"
+              role="option"
+              aria-selected={selectedValue === n}
+              onClick={() => {
+                onChange(n);
+                onOpenChange(false);
+              }}
+              onMouseEnter={() => setFocusIndex(i)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-label-medium transition-colors ${
+                selectedValue === n
+                  ? "bg-primary/10 text-primary"
+                  : focusIndex === i
+                    ? "bg-muted text-foreground"
+                    : "text-foreground hover:bg-muted"
+              }`}
+            >
+              <span className="flex-1 text-left">{n}</span>
+              {selectedValue === n && (
+                <Check className="h-4 w-4 shrink-0" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

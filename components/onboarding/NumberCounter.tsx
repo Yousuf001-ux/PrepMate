@@ -20,29 +20,29 @@ export function NumberCounter({ value, min = 1, max = 100, onChange }: NumberCou
   };
 
   return (
-    <div className="flex items-center gap-6">
+    <div className="flex items-center gap-4">
       <Button 
         variant="outline" 
         size="icon" 
-        className="h-14 w-14 rounded-full border-border/50 text-muted-foreground hover:text-foreground hover:bg-surface disabled:opacity-50"
+        className="h-10 w-10 rounded-full border-border/50 text-muted-foreground hover:text-foreground hover:bg-surface disabled:opacity-50"
         onClick={handleDecrement}
         disabled={value <= min}
       >
-        <Minus className="h-6 w-6" />
+        <Minus className="h-4 w-4" />
       </Button>
       
-      <span className="text-display-medium font-medium min-w-[80px] text-center">
+      <span className="text-title-large font-medium text-center tabular-nums">
         {value}
       </span>
       
       <Button 
         variant="outline" 
         size="icon" 
-        className="h-14 w-14 rounded-full border-border/50 text-muted-foreground hover:text-foreground hover:bg-surface disabled:opacity-50"
+        className="h-10 w-10 rounded-full border-border/50 text-muted-foreground hover:text-foreground hover:bg-surface disabled:opacity-50"
         onClick={handleIncrement}
         disabled={value >= max}
       >
-        <Plus className="h-6 w-6" />
+        <Plus className="h-4 w-4" />
       </Button>
     </div>
   );

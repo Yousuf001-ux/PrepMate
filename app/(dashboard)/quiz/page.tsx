@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { HelpCircle, Loader2 } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 
 export default function QuizPage() {
   const [topic, setTopic] = useState("");
@@ -58,51 +58,48 @@ export default function QuizPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="quiz-topic" className="text-label-medium text-foreground">
-            Topic
-          </label>
-          <Input
-            id="quiz-topic"
-            placeholder="e.g. World War II, Cell Biology..."
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            required
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="w-full p-2 border border-muted-foreground/20 bg-surface rounded-full flex flex-row items-center gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
+        <Input
+          placeholder="e.g. World War II, Cell Biology..."
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          required
+          className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-medium sm:text-body-large pl-4 pr-4 h-14 truncate"
+        />
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="numQuestions" className="text-label-medium text-foreground">
-            Number of questions
-          </label>
-          <Select value={numQuestions} onValueChange={(v) => v && setNumQuestions(v)}>
-            <SelectTrigger id="numQuestions" className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {[3, 5, 10].map((n) => (
-                <SelectItem key={n} value={n.toString()}>
-                  {n}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {error && <p className="text-destructive text-body-small">{error}</p>}
-
-        <Button type="submit" disabled={loading || !topic.trim()}>
+        <Button
+          type="submit"
+          size="icon"
+          disabled={loading || !topic.trim()}
+          className="rounded-full h-12 w-12 ml-auto shrink-0"
+        >
           {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
+            <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
-            "Generate Quiz"
+            <Send className="h-5 w-5" />
           )}
         </Button>
       </form>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="numQuestions" className="text-label-medium text-foreground">
+          Number of questions
+        </label>
+        <Select value={numQuestions} onValueChange={(v) => v && setNumQuestions(v)}>
+          <SelectTrigger id="numQuestions" className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {[3, 5, 10].map((n) => (
+              <SelectItem key={n} value={n.toString()}>
+                {n}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {error && <p className="text-destructive text-body-small">{error}</p>}
 
       {questions.length > 0 && (
         <div className="flex flex-col gap-4">

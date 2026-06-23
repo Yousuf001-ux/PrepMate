@@ -28,15 +28,12 @@ const features = [
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="flex items-center justify-end px-6 py-4 sm:px-10">
+      <header className="flex items-center justify-between px-4 py-4 sm:px-10">
         <span
           className="text-primary"
           style={{
             fontSize: "var(--font-headline-headline-small-font-size)",
             letterSpacing: "var(--font-headline-headline-medium-letter-spacing)",
-            position: "absolute",
-            top: 16,
-            left: 40,
           }}
         >
           PrepMate AI
@@ -46,12 +43,12 @@ export default function LandingPage() {
         </Link>
       </header>
 
-      <main className="flex-1">
-        <section className="mx-auto flex max-w-5xl flex-col items-center px-6 py-24 text-center sm:px-10 lg:py-32">
-          <h1 className="text-display-large text-foreground w-full whitespace-nowrap">
+      <main className="flex-1 flex flex-col">
+        <section className="mx-auto flex max-w-5xl flex-col items-center justify-center flex-1 px-4 py-24 text-center sm:px-10 lg:py-32 max-sm:py-0">
+          <h1 className="text-display-large text-foreground w-full whitespace-nowrap max-sm:whitespace-normal max-sm:text-pretty max-sm:text-display-small">
             Study smarter with AI-powered planning
           </h1>
-          <p className="mt-4 max-w-2xl text-body-large text-muted-foreground">
+          <p className="mt-4 max-w-2xl text-body-large text-muted-foreground max-sm:text-body-medium">
             Personalized study plans, topic summaries, and practice quizzes — all in one place.
           </p>
           <div className="mt-10">
@@ -66,7 +63,7 @@ export default function LandingPage() {
 
       </main>
 
-      <footer className="px-6 py-6 text-center text-body-small text-muted-foreground sm:px-10">
+      <footer className="px-4 py-6 text-center text-body-small text-muted-foreground sm:px-10">
         <p>&copy; {new Date().getFullYear()} PrepMate AI. All rights reserved.</p>
       </footer>
     </div>

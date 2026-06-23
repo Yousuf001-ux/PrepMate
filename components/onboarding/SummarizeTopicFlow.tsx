@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowLeft, Upload, FileText, X, Plus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Send, FileText, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { completeOnboarding } from "@/actions/onboarding";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -16,10 +17,19 @@ interface SummarizeTopicFlowProps {
 
 export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
   const router = useRouter();
+  const { update } = useSession();
   const [topic, setTopic] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [summary, setSummary] = useState<any>(null); // Ideally typed from API response
+  const [summary, setSummary] = useState<any>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -63,7 +73,8 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
     }
   };
 
-  const handleContinueToDashboard = () => {
+  const handleContinueToDashboard = async () => {
+    await update({ onboardingCompleted: true });
     router.push("/dashboard");
   };
 
@@ -123,10 +134,10 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
 
       <div className="flex flex-col items-center w-full max-w-2xl space-y-8">
         <h2 className="text-headline-large text-foreground font-medium text-center">
-          Summarize Topic
+          Summarize a topic
         </h2>
         
-        <div className="w-full p-2 border border-border bg-surface rounded-2xl flex flex-col sm:flex-row items-center gap-2 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+        <div className="w-full p-2 border border-muted-foreground/20 bg-surface rounded-full flex flex-row items-center gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
           <div className="relative">
             <input 
               type="file" 
@@ -144,14 +155,18 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
           </div>
           
           <Input 
-            className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-large px-4 h-14"
-            placeholder="What topic do you want summarized?"
+            className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-medium sm:text-body-large pl-0 pr-4 h-14 truncate"
+            placeholder={isMobile ? "What do you want summarized?" : "What topic do you want summarized?"}
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
           />
 
-          <Button size="lg" className="rounded-xl h-12 px-6 ml-auto w-full sm:w-auto" onClick={handleGenerate}>
-            Generate Summary
+          <Button size="icon" className="rounded-full h-12 w-12 ml-auto shrink-0" onClick={handleGenerate} disabled={isProcessing || (!topic.trim() && !file)}>
+            {isProcessing ? (
+              <div className="h-5 w-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
           </Button>
         </div>
 

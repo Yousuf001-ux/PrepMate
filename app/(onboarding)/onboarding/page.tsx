@@ -18,7 +18,7 @@ export default function OnboardingPage() {
   return (
     <div className="flex-1 flex flex-col items-center w-full">
       {step === "WELCOME" && (
-        <div className="flex-1 flex items-center justify-center w-full max-w-3xl mx-auto">
+        <div className="flex-1 flex items-center justify-center w-full max-sm:min-h-[100dvh] max-w-3xl mx-auto">
           <WelcomeScreen onSelectGoal={setStep} />
         </div>
       )}
