@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PrepMate AI — Smart Academic Study Planner",
+  title: "PrepMate — Smart Academic Study Planner",
   description: "Personalized, structured, and realistic study schedules powered by AI to help university and medical students succeed.",
 };
 

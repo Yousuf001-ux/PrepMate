@@ -15,7 +15,7 @@ export default function AuthLayout({
           letterSpacing: "var(--font-headline-headline-medium-letter-spacing)",
         }}
       >
-        PrepMate AI
+        PrepMate
       </Link>
       <div className="w-full max-w-sm">{children}</div>
     </div>

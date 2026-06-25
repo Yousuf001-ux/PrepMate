@@ -36,7 +36,7 @@ export default function LandingPage() {
             letterSpacing: "var(--font-headline-headline-medium-letter-spacing)",
           }}
         >
-          PrepMate AI
+          PrepMate
         </span>
         <Link href="/register">
           <Button variant="default" className="rounded-full px-5 py-6">Get started</Button>
@@ -64,7 +64,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="px-4 py-6 text-center text-body-small text-muted-foreground sm:px-10">
-        <p>&copy; {new Date().getFullYear()} PrepMate AI. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} PrepMate. All rights reserved.</p>
       </footer>
     </div>
   );

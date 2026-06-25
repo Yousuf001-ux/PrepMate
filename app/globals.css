@@ -150,7 +150,7 @@
   --sidebar-foreground: var(--color-role-light-on-surface);
   --sidebar-primary: var(--color-role-light-primary);
   --sidebar-primary-foreground: var(--color-role-light-on-primary);
-  --sidebar-accent: var(--color-role-light-surface-container-low);
+  --sidebar-accent: var(--color-role-light-surface-container);
   --sidebar-accent-foreground: var(--color-role-light-on-surface);
   --sidebar-border: var(--color-role-light-outline-variant);
   --sidebar-ring: var(--color-role-light-primary);
@@ -192,7 +192,7 @@
   --sidebar-foreground: var(--color-role-dark-on-surface);
   --sidebar-primary: var(--color-role-dark-primary);
   --sidebar-primary-foreground: var(--color-role-dark-on-primary);
-  --sidebar-accent: var(--color-role-dark-surface-container-low);
+  --sidebar-accent: var(--color-role-dark-surface-container);
   --sidebar-accent-foreground: var(--color-role-dark-on-surface);
   --sidebar-border: var(--color-role-dark-outline-variant);
   --sidebar-ring: var(--color-role-dark-primary);

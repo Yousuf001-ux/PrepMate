@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import {
-  LayoutDashboard,
+  LayoutGrid,
   BookOpen,
-  Calendar,
+  CalendarDays,
   FileText,
   HelpCircle,
-  BarChart3,
+  TrendingUp,
   LogOut,
   Sparkles,
   ChevronUp,
@@ -24,6 +24,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -34,12 +35,12 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/courses", label: "Courses", icon: BookOpen },
-  { href: "/study-plan", label: "Study Plan", icon: Calendar },
-  { href: "/summarizer", label: "Summarizer", icon: FileText },
-  { href: "/quiz", label: "Quiz", icon: HelpCircle },
-  { href: "/progress", label: "Progress", icon: BarChart3 },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, strokeWidth: 1.25 },
+  { href: "/courses", label: "Courses", icon: BookOpen, strokeWidth: 1.25 },
+  { href: "/study-plan", label: "Study Plan", icon: CalendarDays, strokeWidth: 1.25 },
+  { href: "/summarizer", label: "Summarizer", icon: FileText, strokeWidth: 1.25 },
+  { href: "/quiz", label: "Quiz", icon: HelpCircle, strokeWidth: 1.25 },
+  { href: "/progress", label: "Progress", icon: TrendingUp, strokeWidth: 1.25 },
 ];
 
 export function AppSidebar() {
@@ -55,24 +56,16 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Sparkles className="size-4" />
-              </div>
-              <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold">PrepMate</span>
-                <span className="text-label-small text-muted-foreground">AI Study Planner</span>
-              </div>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <div className="flex items-center justify-between px-1">
+          <Link href="/dashboard" className="text-title-medium font-semibold text-primary group-data-[collapsible=icon]:hidden">
+            PrepMate
+          </Link>
+          <SidebarTrigger className="size-7" />
+        </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarMenu>
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -82,7 +75,7 @@ export function AppSidebar() {
               return (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link href={item.href} />}>
-                    <Icon />
+                    <Icon strokeWidth={item.strokeWidth} />
                     <span>{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
