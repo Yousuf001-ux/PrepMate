@@ -15,6 +15,7 @@ const CourseInputSchema = z.object({
 });
 
 const StudyPlanDataSchema = z.object({
+  sessionName: z.string().min(1),
   courses: z.array(CourseInputSchema).min(1),
   hoursPerDay: z.number().min(1).max(16),
 });
@@ -92,6 +93,7 @@ export async function completeOnboarding(input: OnboardingInput) {
         const dbStudyPlan = await tx.studyPlan.create({
           data: {
             userId,
+            name: parsed.data.sessionName,
             sessions: {
               create: aiPlan.sessions.map(s => ({
                 topicId: getTopicId(s.course, s.topic),
@@ -116,8 +118,9 @@ export async function completeOnboarding(input: OnboardingInput) {
 
       const aiSummary = await generateSummary(parsed.data.topic);
 
+      let summaryId = "";
       await prisma.$transaction(async (tx) => {
-        await tx.summary.create({
+        const summary = await tx.summary.create({
           data: {
             userId,
             title: parsed.data.topic.substring(0, 100),
@@ -127,6 +130,7 @@ export async function completeOnboarding(input: OnboardingInput) {
             }
           }
         });
+        summaryId = summary.id;
 
         await tx.user.update({
           where: { id: userId },
@@ -134,7 +138,7 @@ export async function completeOnboarding(input: OnboardingInput) {
         });
       });
 
-      return { success: true as const, data: { explanation: aiSummary.summary, keyConcepts: aiSummary.keyConcepts } };
+      return { success: true as const, data: { id: summaryId, title: parsed.data.topic.substring(0, 100), explanation: aiSummary.summary, keyConcepts: aiSummary.keyConcepts } };
 
     } else if (input.flow === "GENERATE_QUIZ") {
       const parsed = GenerateQuizDataSchema.safeParse(input.data);

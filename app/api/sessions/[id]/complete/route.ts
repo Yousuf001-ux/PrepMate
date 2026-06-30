@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 
 const UpdateStatusSchema = z.object({
-  status: z.enum(["complete", "missed"]),
+  status: z.enum(["complete", "missed", "pending"]),
 });
 
 export async function PATCH(

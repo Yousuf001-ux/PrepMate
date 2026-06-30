@@ -9,7 +9,6 @@ import { completeOnboarding } from "@/actions/onboarding";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
 
 interface SummarizeTopicFlowProps {
   onBack: () => void;
@@ -21,7 +20,6 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
   const [topic, setTopic] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [summary, setSummary] = useState<any>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -61,7 +59,10 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
       });
 
       if (result.success) {
-        setSummary(result.data); // Store the summary result to display
+        const data = result.data as { id: string; title: string; explanation: string; keyConcepts: string[] };
+        window.dispatchEvent(new Event("history-updated"));
+        await update({ onboardingCompleted: true });
+        router.push(`/chatmate?summaryId=${data.id}`);
       } else {
         toast.error(result.error || "Failed to generate summary");
         setIsProcessing(false);
@@ -73,53 +74,12 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
     }
   };
 
-  const handleContinueToDashboard = async () => {
-    await update({ onboardingCompleted: true });
-    router.push("/dashboard");
-  };
-
-  if (summary) {
-    return (
-      <div className="w-full flex flex-col items-center animate-in fade-in duration-300 space-y-8 pb-24">
-        <h2 className="text-headline-large text-foreground font-medium text-center">
-          Your Summary
-        </h2>
-        <Card className="w-full bg-surface shadow-sm">
-          <CardContent className="p-6 space-y-6">
-            <div>
-              <h3 className="text-title-large text-foreground font-medium mb-2">Simplified Explanation</h3>
-              <p className="text-body-medium text-muted-foreground whitespace-pre-wrap">{summary.explanation}</p>
-            </div>
-            {summary.keyConcepts && summary.keyConcepts.length > 0 && (
-              <div>
-                <h3 className="text-title-large text-foreground font-medium mb-2">Key Concepts</h3>
-                <ul className="list-disc pl-5 space-y-1">
-                  {summary.keyConcepts.map((concept: string, idx: number) => (
-                    <li key={idx} className="text-body-medium text-muted-foreground">{concept}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        <div className="fixed bottom-0 left-0 w-full p-4 bg-background/80 backdrop-blur-md border-t border-border flex justify-center z-10 gap-4">
-          <Button variant="outline" size="lg" className="rounded-full" onClick={() => setSummary(null)}>
-            Regenerate
-          </Button>
-          <Button size="lg" className="rounded-full" onClick={handleContinueToDashboard}>
-            Continue to Dashboard
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   if (isProcessing) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-6">
-        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <h2 className="text-headline-small text-foreground">Generating your summary...</h2>
-        <p className="text-body-medium text-muted-foreground">AI is reading and simplifying the topic.</p>
+      <div className="w-full flex flex-col items-center animate-in fade-in duration-300">
+        <div className="w-full max-w-2xl mt-32">
+          <p className="text-body-medium text-muted-foreground animate-pulse">Generating your summary...</p>
+        </div>
       </div>
     );
   }
@@ -137,7 +97,7 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
           Summarize a topic
         </h2>
         
-        <div className="w-full p-2 border border-muted-foreground/20 bg-surface rounded-full flex flex-row items-center gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
+        <form onSubmit={(e) => { e.preventDefault(); handleGenerate(); }} className="w-full p-2 border border-muted-foreground/20 bg-surface rounded-full flex flex-row items-center gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
           <div className="relative">
             <input 
               type="file" 
@@ -155,6 +115,7 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
           </div>
           
           <Input 
+            autoFocus
             className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-medium sm:text-body-large pl-0 pr-4 h-14 truncate"
             placeholder={isMobile ? "What do you want summarized?" : "What topic do you want summarized?"}
             value={topic}
@@ -168,7 +129,7 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
               <Send className="h-5 w-5" />
             )}
           </Button>
-        </div>
+        </form>
 
         {file && (
           <div className="flex items-center gap-3 px-4 py-3 bg-primary/5 text-primary rounded-xl w-full">

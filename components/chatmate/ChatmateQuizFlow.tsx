@@ -5,18 +5,14 @@ import { ArrowLeft, Plus, FileText, X, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { completeOnboarding } from "@/actions/onboarding";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { chatmateQuiz } from "@/actions/chatmate-tools";
 import { toast } from "sonner";
 
-interface GenerateQuizFlowProps {
+interface ChatmateQuizFlowProps {
   onBack: () => void;
 }
 
-export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
-  const router = useRouter();
-  const { update } = useSession();
+export function ChatmateQuizFlow({ onBack }: ChatmateQuizFlowProps) {
   const [topic, setTopic] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [questionCount, setQuestionCount] = useState<number | "">("");
@@ -47,17 +43,15 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
 
     setIsProcessing(true);
     try {
-      const result = await completeOnboarding({
-        flow: "GENERATE_QUIZ",
-        data: {
-          topic: topic || (file ? `Generate a quiz about the content of ${file.name}` : "Unknown topic"),
-          questionCount: typeof questionCount === "number" ? questionCount : 10
-        }
-      });
+      const result = await chatmateQuiz(
+        topic || (file ? `Generate a quiz about the content of ${file.name}` : "Unknown topic"),
+        typeof questionCount === "number" ? questionCount : 10
+      );
 
-      if (result.success && result.data && "quizId" in result.data) {
-        await update({ onboardingCompleted: true });
-        router.push("/dashboard"); 
+      if (result.success && result.data) {
+        toast.success("Quiz generated successfully!");
+        setIsProcessing(false);
+        onBack();
       } else {
         toast.error(result.error || "Failed to generate quiz");
         setIsProcessing(false);
@@ -91,27 +85,27 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
         <h2 className="text-headline-large text-foreground font-medium text-center">
           Generate Quiz
         </h2>
-        
+
         <div className="w-full flex flex-col md:flex-row gap-6 items-start">
           <div className="w-full md:w-[70%] p-2 border border-muted-foreground/20 bg-surface rounded-full flex flex-col items-start gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
             <div className="flex w-full items-center gap-0">
               <div className="relative">
-                <input 
-                  type="file" 
-                  id="file-upload" 
-                  className="hidden" 
+                <input
+                  type="file"
+                  id="file-upload"
+                  className="hidden"
                   accept=".pdf,.docx,.txt,image/png,image/jpeg"
                   onChange={handleFileChange}
                 />
-                <Label 
-                  htmlFor="file-upload" 
+                <Label
+                  htmlFor="file-upload"
                   className="cursor-pointer h-12 w-12 flex items-center justify-center bg-muted/50 hover:bg-muted text-muted-foreground rounded-xl transition-colors"
                 >
                   <Plus className="h-6 w-6" />
                 </Label>
               </div>
-              
-              <Input 
+
+              <Input
                 autoFocus
                 className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-large pl-0 pr-4 h-14 truncate"
                 placeholder="What topic should the quiz be about?"

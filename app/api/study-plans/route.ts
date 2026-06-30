@@ -8,6 +8,7 @@ import { z } from "zod";
 const GeneratePlanSchema = z.object({
   availableHoursPerDay: z.number().min(1).max(16),
   startDate: z.string().datetime().optional(),
+  name: z.string().optional(),
 });
 
 export async function GET() {
@@ -83,6 +84,7 @@ export async function POST(req: NextRequest) {
     const plan = await prisma.studyPlan.create({
       data: {
         userId: session.user.id,
+        name: parsed.data.name ?? courses[0]?.name ?? "Untitled",
         sessions: {
           create: aiResult.sessions.map((s) => ({
             topicId: courses
