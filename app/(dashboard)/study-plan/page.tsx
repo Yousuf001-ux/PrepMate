@@ -374,7 +374,7 @@ export default function StudyPlanPage() {
             {completedCount} completed
           </p>
         </div>
-        <Link href="/chatmate?flow=study_plan" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <Link href="/chatmate?flow=study_plan" className="hidden md:inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
@@ -398,7 +398,7 @@ export default function StudyPlanPage() {
         </div>
 
       <div className="flex flex-col xl:flex-row gap-6">
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 order-2 xl:order-none">
           <div className="rounded-xl border border-border/20 bg-card">
             <div className="flex items-center justify-between px-5 py-3 border-b border-border/20">
               <button
@@ -445,7 +445,7 @@ export default function StudyPlanPage() {
           </div>
         </div>
 
-        <div className="xl:w-80 2xl:w-96 shrink-0">
+        <div className="xl:w-80 2xl:w-96 shrink-0 order-1 xl:order-none">
           <div className="rounded-xl border border-border/20 bg-card h-full">
             <div className="px-5 py-3 border-b border-border/20 flex items-center justify-between">
               <div>
@@ -533,6 +533,12 @@ export default function StudyPlanPage() {
           </div>
         </div>
       </div>
+      <Link href="/chatmate?flow=study_plan" className="md:hidden fixed top-4 right-4 inline-flex items-center gap-1.5 text-sm text-foreground hover:text-foreground transition-colors cursor-pointer z-[60] rounded-lg px-3 py-2">
+        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        New Study Plan
+      </Link>
     </div>
   )
 }

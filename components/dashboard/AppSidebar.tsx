@@ -28,6 +28,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -55,6 +56,7 @@ export function AppSidebar() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const { setOpenMobile } = useSidebar();
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const initials = session?.user?.name
     ?.split(" ")
@@ -106,7 +108,7 @@ export function AppSidebar() {
 
               return (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link href={item.href} />}>
+                  <SidebarMenuButton isActive={isActive} tooltip={item.label} render={<Link href={item.href} onClick={() => setOpenMobile(false)} />}>
                     <Icon strokeWidth={isActive ? 2 : item.strokeWidth} />
                     <span>{item.label}</span>
                   </SidebarMenuButton>
@@ -154,6 +156,7 @@ export function AppSidebar() {
                         } else {
                           router.push("/chatmate");
                         }
+                        setOpenMobile(false);
                       }
                     }
                   } catch { }
@@ -161,7 +164,7 @@ export function AppSidebar() {
 
                 return (
                   <SidebarMenuItem key={`${item.type}-${item.id}`} className="group/item relative">
-                    <SidebarMenuButton isActive={isActive} tooltip={item.title} render={<Link href={item.href} />} className="pr-8">
+                    <SidebarMenuButton isActive={isActive} tooltip={item.title} render={<Link href={item.href} onClick={() => setOpenMobile(false)} />} className="pr-8">
                       <Icon strokeWidth={isActive ? 2 : 1.25} className="size-4 shrink-0" />
                       <span className="truncate text-sm min-w-0">{item.title}</span>
                     </SidebarMenuButton>

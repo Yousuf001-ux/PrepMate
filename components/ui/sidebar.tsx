@@ -187,10 +187,11 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+          className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden data-[side=left]:border-r-0"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+              borderRight: "none",
             } as React.CSSProperties
           }
           side={side}

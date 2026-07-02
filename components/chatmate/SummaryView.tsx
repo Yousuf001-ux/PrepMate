@@ -86,7 +86,7 @@ export function SummaryView({ summaryId, onNew }: SummaryViewProps) {
 
   return (
     <div className="w-full h-full overflow-y-auto flex flex-col">
-      <div className="w-full max-w-2xl mx-auto mt-24 pb-6">
+      <div className="w-full max-w-2xl mx-auto max-sm:mt-8 sm:mt-24 pb-6">
         <p className="text-body-medium text-muted-foreground">Here&apos;s a summary of {summary.title}</p>
         <Card className="w-full border border-border/20 mt-4 ring-0">
           <CardContent className="pt-2 px-14 pb-6 space-y-6">
@@ -116,7 +116,7 @@ export function SummaryView({ summaryId, onNew }: SummaryViewProps) {
                 {copied ? <Check className="size-4 text-green-500" /> : <Copy className="size-4" />}
               </button>
             </div>
-            <div>
+            <div className="max-sm:-mx-10">
               <h3 className="text-title-large text-foreground font-medium mb-2">Simplified Explanation</h3>
               <div className="space-y-4">
                 {explanation.split("\n\n").map((paragraph: string, idx: number) => (
@@ -130,7 +130,7 @@ export function SummaryView({ summaryId, onNew }: SummaryViewProps) {
               </div>
             </div>
             {summary.keyConcepts && summary.keyConcepts.length > 0 && (
-              <div>
+              <div className="max-sm:-mx-10">
                 <h3 className="text-title-large text-foreground font-medium mb-2">Key Concepts</h3>
                 <ul className="list-disc pl-5 space-y-1">
                   {summary.keyConcepts.map((concept: string, idx: number) => (
@@ -144,7 +144,7 @@ export function SummaryView({ summaryId, onNew }: SummaryViewProps) {
       </div>
       <button
         onClick={onNew}
-        className="fixed top-8 right-10 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer z-50"
+        className="fixed top-6 right-4 md:top-8 md:right-10 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer z-50"
       >
         <Plus className="size-4" />
         New summary

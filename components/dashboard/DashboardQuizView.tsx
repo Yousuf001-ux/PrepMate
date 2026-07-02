@@ -113,7 +113,7 @@ export function DashboardQuizView() {
       <div className="w-full flex flex-col items-center animate-in fade-in duration-300">
         <div className="w-full">
           <div className="w-full pt-8 pb-4">
-            <div className="mx-auto w-full max-w-[80%] flex flex-col gap-4">
+            <div className="mx-auto w-full max-w-[80%] max-sm:max-w-full flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div className="h-6 w-40 bg-muted rounded animate-pulse" />
                 <div className="h-5 w-20 bg-muted rounded animate-pulse" />
@@ -136,84 +136,90 @@ export function DashboardQuizView() {
     ).length;
 
     return (
-      <div className="w-full flex flex-col items-center animate-in fade-in duration-300">
-        <div className="w-full">
-          <div className="w-full pt-8 pb-4">
-            <div className="mx-auto w-full max-w-[80%] flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-foreground font-medium truncate" style={{ fontSize: "1.25rem", letterSpacing: "-0.02em" }}>
-                  {capitalize(quizData.topic)}
-                </h2>
+      <>
+        <div className="w-full flex flex-col items-center animate-in fade-in duration-300">
+          <div className="w-full">
+            <div className="w-full pt-8 pb-4">
+              <div className="mx-auto w-full max-w-[80%] max-sm:max-w-full flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-foreground font-medium truncate" style={{ fontSize: "1.25rem", letterSpacing: "-0.02em" }}>
+                    {capitalize(quizData.topic)}
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-full bg-palette-tertiary-60 text-white font-semibold text-label-medium px-5 h-10 flex items-center">
+                      {correctCount}/{totalQuestions} correct
+                    </span>
+                    <button onClick={handleReset} className="hidden md:inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                      <Plus className="size-4" />
+                      New Quiz
+                    </button>
+                  </div>
+                </div>
                 <div className="flex items-center gap-3">
-                  <span className="rounded-full bg-palette-tertiary-60 text-white font-semibold text-label-medium px-5 h-10 flex items-center">
-                    {correctCount}/{totalQuestions} correct
+                  <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full" style={{ width: "100%" }} />
+                  </div>
+                  <span className="text-label-medium text-muted-foreground whitespace-nowrap tabular-nums">
+                    {totalQuestions}/{totalQuestions}
                   </span>
-                  <button onClick={handleReset} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                    <Plus className="size-4" />
-                    New Quiz
-                  </button>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full" style={{ width: "100%" }} />
-                </div>
-                <span className="text-label-medium text-muted-foreground whitespace-nowrap tabular-nums">
-                  {totalQuestions}/{totalQuestions}
-                </span>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="w-full max-w-[80%] space-y-6">
-          <div className="flex flex-col gap-6">
-            {quizData.questions.map((q, i) => {
-              const isCorrect = selectedAnswers[i] === q.correctAnswer;
-              const isWrong = selectedAnswers[i] && selectedAnswers[i] !== q.correctAnswer;
+          <div className="w-full max-w-[80%] max-sm:max-w-full space-y-6">
+            <div className="flex flex-col gap-6">
+              {quizData.questions.map((q, i) => {
+                const isCorrect = selectedAnswers[i] === q.correctAnswer;
+                const isWrong = selectedAnswers[i] && selectedAnswers[i] !== q.correctAnswer;
 
-              return (
-                <Card key={i} className={`border ${isCorrect ? "border-green-500/50" : isWrong ? "border-red-500/50" : ""}`}>
-                  <CardHeader>
-                    <CardTitle className="flex items-start gap-2 text-title-medium">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-label-small text-primary">
-                        {i + 1}
-                      </span>
-                      {q.question}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col gap-2">
-                      {q.options.map((opt, j) => {
-                        const isCorrectOpt = opt === q.correctAnswer;
-                        const isWrongOpt = selectedAnswers[i] === opt && opt !== q.correctAnswer;
-                        let optClass = "rounded-lg border border-muted-foreground/10 px-3 py-2.5 text-body-small text-left";
+                return (
+                  <Card key={i} className={`border ${isCorrect ? "border-green-500/50" : isWrong ? "border-red-500/50" : ""}`}>
+                    <CardHeader>
+                      <CardTitle className="flex items-start gap-2 text-title-medium">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-label-small text-primary">
+                          {i + 1}
+                        </span>
+                        {q.question}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-col gap-2">
+                        {q.options.map((opt, j) => {
+                          const isCorrectOpt = opt === q.correctAnswer;
+                          const isWrongOpt = selectedAnswers[i] === opt && opt !== q.correctAnswer;
+                          let optClass = "rounded-lg border border-muted-foreground/10 px-3 py-2.5 text-body-small text-left";
 
-                        if (isCorrectOpt) optClass += " border-green-500 bg-green-50 text-green-800";
-                        else if (isWrongOpt) optClass += " border-red-500 bg-red-50 text-red-800";
+                          if (isCorrectOpt) optClass += " border-green-500 bg-green-50 text-green-800";
+                          else if (isWrongOpt) optClass += " border-red-500 bg-red-50 text-red-800";
 
-                        return (
-                          <div key={j} className={optClass}>
-                            <span className="flex items-center gap-2">
-                              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-[0.65rem] font-medium">
-                                {String.fromCharCode(65 + j)}
+                          return (
+                            <div key={j} className={optClass}>
+                              <span className="flex items-center gap-2">
+                                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-[0.65rem] font-medium">
+                                  {String.fromCharCode(65 + j)}
+                                </span>
+                                {opt}
                               </span>
-                              {opt}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <p className="mt-3 text-body-small text-muted-foreground border-t border-muted-foreground/10 pt-3">
-                      <span className="font-medium text-foreground">Explanation:</span> {q.explanation}
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="mt-3 text-body-small text-muted-foreground border-t border-muted-foreground/10 pt-3">
+                        <span className="font-medium text-foreground">Explanation:</span> {q.explanation}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
+        <button onClick={handleReset} className="md:hidden fixed top-4 right-4 inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-foreground transition-colors cursor-pointer z-[60] rounded-lg px-3 py-2">
+          <Plus className="size-4" />
+          New Quiz
+        </button>
+      </>
     );
   }
 
@@ -225,7 +231,7 @@ export function DashboardQuizView() {
     <div className="w-full flex flex-col items-center animate-in fade-in duration-300">
       <div className="w-full">
         <div className="w-full pt-8 pb-4">
-          <div className="mx-auto w-full max-w-[80%] flex flex-col gap-4">
+          <div className="mx-auto w-full max-w-[80%] max-sm:max-w-full flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2 className="text-foreground font-medium truncate" style={{ fontSize: "1.25rem", letterSpacing: "-0.02em" }}>
                 {capitalize(quizData.topic)}
@@ -249,7 +255,7 @@ export function DashboardQuizView() {
         </div>
       </div>
 
-      <div className="w-full max-w-[80%] space-y-10 mt-10">
+      <div className="w-full max-w-[80%] max-sm:max-w-full max-sm:space-y-4 sm:space-y-10 max-sm:mt-4 sm:mt-10">
         <div className="w-full mx-auto">
           <Card>
             <CardHeader>
@@ -310,6 +316,10 @@ export function DashboardQuizView() {
             {currentQuestion === totalQuestions - 1 ? "Show Results" : "Next"}
           </Button>
         </div>
+        <button onClick={handleReset} className="md:hidden fixed top-4 right-4 inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-foreground transition-colors cursor-pointer z-[60] rounded-lg px-3 py-2">
+          <Plus className="size-4" />
+          New Quiz
+        </button>
       </div>
     </div>
   );

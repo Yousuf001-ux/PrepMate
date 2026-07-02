@@ -25,12 +25,6 @@ export default async function CoursesPage() {
             Manage your courses and topics
           </p>
         </div>
-        <Link href="/courses/new">
-          <Button variant="default">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Course
-          </Button>
-        </Link>
       </div>
 
       {courses.length === 0 ? (
@@ -51,7 +45,7 @@ export default async function CoursesPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
             <Link key={course.id} href={`/courses/${course.id}`}>
-              <Card className="transition-shadow hover:shadow-md">
+              <Card className="transition-shadow hover:shadow-sm hover:shadow-black/5">
                 <CardHeader>
                   <CardTitle className="text-title-medium">
                     {course.name}
