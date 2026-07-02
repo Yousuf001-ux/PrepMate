@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowLeft, Plus, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ArrowLeft, Plus, X, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { completeOnboarding } from "@/actions/onboarding";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { generateId } from "@/lib/utils";
 
 export interface CourseInputData {
   id: string;
@@ -34,13 +35,23 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
   const [courses, setCourses] = useState<CourseInputData[]>([]);
   const [hoursPerDay, setHoursPerDay] = useState(2);
   const [sessionName, setSessionName] = useState("");
+  const [focusTopic, setFocusTopic] = useState<{ courseId: string; index: number } | null>(null);
+  const topicRefs = useRef<Map<string, HTMLInputElement>>(new Map());
+
+  useEffect(() => {
+    if (focusTopic) {
+      const key = `${focusTopic.courseId}-${focusTopic.index}`;
+      topicRefs.current.get(key)?.focus();
+      setFocusTopic(null);
+    }
+  }, [focusTopic]);
 
   const handleNextToDetails = () => {
     // Initialize courses array if it's smaller than selected count
     const newCourses = [...courses];
     while (newCourses.length < courseCount) {
       newCourses.push({
-        id: crypto.randomUUID(),
+        id: generateId(),
         name: "",
         topics: [""],
         examDate: "",
@@ -94,9 +105,9 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
         }
       });
 
-      if (result.success) {
+      if (result.success && result.data && "planId" in result.data) {
         await update({ onboardingCompleted: true });
-        router.push("/study-plan");
+        router.push(`/study-plan?planId=${result.data.planId}`);
       } else {
         toast.error(result.error || "Something went wrong while building your study plan. Let's try again.");
         setStep("AVAILABILITY");
@@ -113,9 +124,12 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
   };
 
   const addTopic = (courseId: string) => {
-    setCourses(courses.map(c => 
+    const course = courses.find(c => c.id === courseId);
+    const newIndex = course ? course.topics.length : 0;
+    setCourses(courses.map(c =>
       c.id === courseId ? { ...c, topics: [...c.topics, ""] } : c
     ));
+    setFocusTopic({ courseId, index: newIndex });
   };
 
   const updateTopic = (courseId: string, topicIndex: number, value: string) => {
@@ -139,13 +153,28 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
     }));
   };
 
+  const loadingMessages = [
+    "Generating your study plan...",
+    "Analyzing your courses...",
+    "Optimizing your schedule...",
+    "Balancing your workload...",
+    "Almost there...",
+  ];
+  const [loadingIndex, setLoadingIndex] = useState(0);
+
+  useEffect(() => {
+    if (step !== "PROCESSING") return;
+    const interval = setInterval(() => {
+      setLoadingIndex((i) => (i + 1) % loadingMessages.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [step]);
+
   if (step === "PROCESSING") {
     return (
-      <div className="flex-1 flex items-center justify-center w-full">
-        <div className="flex flex-col items-center justify-center space-y-6">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <h2 className="text-headline-small text-foreground">Creating your personalized study plan...</h2>
-          <p className="text-body-medium text-muted-foreground">This may take a few moments as AI analyzes your courses.</p>
+      <div className="flex-1 flex items-start w-full pt-6">
+        <div className="w-full max-w-3xl">
+          <p className="text-label-large text-muted-foreground animate-pulse">{loadingMessages[loadingIndex]}</p>
         </div>
       </div>
     );
@@ -154,7 +183,7 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
   const progress = step === "COURSE_COUNT" ? 33 : step === "COURSE_DETAILS" ? 66 : 100;
 
   return (
-    <div className="flex-1 flex flex-col items-center w-full animate-in fade-in duration-300 pt-20">
+      <div className="flex-1 flex flex-col items-center w-full animate-in fade-in duration-300 max-sm:pt-12 pt-20">
       <div className="w-full md:w-[60%] fixed top-0 md:top-4 z-50 bg-background left-1/2 -translate-x-1/2 px-4 md:px-0 flex flex-col gap-4 pt-2 md:pt-0">
         <Button variant="ghost" size="icon" onClick={step === "COURSE_COUNT" ? onBack : step === "COURSE_DETAILS" ? () => setStep("COURSE_COUNT") : () => setStep("COURSE_DETAILS")}>
           <ArrowLeft className="h-6 w-6" />
@@ -181,7 +210,7 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
         )}
 
         {step === "COURSE_DETAILS" && (
-          <div className="flex flex-col items-center w-full md:w-[60%] px-4 md:px-0 space-y-10 pb-24">
+          <div className="flex flex-col items-center w-full md:w-[60%] space-y-10 pb-24">
             <h2 className="text-headline-medium text-foreground font-medium text-left w-full mb-0">
               Tell us about your courses
             </h2>
@@ -197,7 +226,7 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
                     <Input
                       autoFocus
                       id="session-name"
-                      placeholder="e.g. Midterm Prep"
+                        placeholder="What are you preparing for?"
                       value={sessionName}
                       onChange={(e) => setSessionName(e.target.value)}
                     />
@@ -214,10 +243,10 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor={`name-${course.id}`}>Course Name <span className="text-destructive">*</span></Label>
-                      <Input 
-                        id={`name-${course.id}`} 
-                        placeholder="e.g. Human Anatomy" 
+<Label htmlFor={`name-${course.id}`}>Course Code <span className="text-destructive">*</span></Label>
+                        <Input 
+                          id={`name-${course.id}`} 
+                          placeholder="e.g. BCH 203" 
                         value={course.name}
                         onChange={(e) => updateCourse(course.id, "name", e.target.value)}
                       />
@@ -225,13 +254,17 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
 
                     <div className="space-y-2">
                       <Label htmlFor={`date-${course.id}`}>Exam Date <span className="text-destructive">*</span></Label>
-                      <Input 
-                        id={`date-${course.id}`} 
-                        type="date" 
-                        value={course.examDate}
-                        onChange={(e) => updateCourse(course.id, "examDate", e.target.value)}
-                        onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
-                      />
+                      <div className="relative w-full">
+                        <Input 
+                          id={`date-${course.id}`} 
+                          type="date" 
+                          value={course.examDate}
+                          onChange={(e) => updateCourse(course.id, "examDate", e.target.value)}
+                          onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
+                          className="[&::-webkit-calendar-picker-indicator]:opacity-0"
+                        />
+                        <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="space-y-3">
@@ -242,6 +275,7 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
                             placeholder="e.g. Cardiovascular System" 
                             value={topic}
                             onChange={(e) => updateTopic(course.id, tIdx, e.target.value)}
+                            ref={(el) => { if (el) topicRefs.current.set(`${course.id}-${tIdx}`, el); }}
                           />
                           <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={() => removeTopic(course.id, tIdx)}>
                             <X className="h-4 w-4" />
@@ -266,7 +300,8 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
         )}
 
         {step === "AVAILABILITY" && (
-          <div className="flex flex-col items-center space-y-12">
+          <div className="flex-1 flex flex-col items-center justify-center w-full">
+            <div className="flex flex-col items-center space-y-12 max-sm:pb-24">
             <h2 className="text-headline-medium text-foreground font-medium text-center">
               How many hours can you study per day?
             </h2>
@@ -276,9 +311,15 @@ export function StudyPlanFlow({ onBack }: StudyPlanFlowProps) {
                 That's a lot! Remember to be honest with yourself — consistency beats intensity. Pace yourself so you can stick with it.
               </p>
             )}
-            <Button size="lg" className="w-full md:w-auto mt-8 rounded-full px-8 h-14" onClick={handleSubmit}>
+            <Button size="lg" className="hidden sm:flex w-full md:w-auto mt-8 rounded-full px-8 h-14" onClick={handleSubmit}>
               Generate Study Plan
             </Button>
+            <div className="fixed bottom-0 left-0 w-full px-4 py-4 bg-background/80 backdrop-blur-md flex justify-start z-10 sm:hidden">
+              <Button size="lg" className="w-full rounded-full px-8 h-14" onClick={handleSubmit}>
+                Generate Study Plan
+              </Button>
+            </div>
+          </div>
           </div>
         )}
       </div>

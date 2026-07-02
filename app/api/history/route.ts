@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { capitalize } from "@/lib/utils";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -66,12 +67,12 @@ export async function GET() {
     }
 
     for (const q of quizzes) {
-      const label = q.topic?.name ?? "Untitled";
+      const label = capitalize(q.topic?.name ?? "Untitled");
       items.push({
         id: q.id,
         type: "quiz",
         title: `Quiz: ${label}`,
-        href: `/quiz`,
+        href: `/dashboard?quiz=${q.id}`,
         createdAt: q.createdAt.toISOString(),
       });
     }

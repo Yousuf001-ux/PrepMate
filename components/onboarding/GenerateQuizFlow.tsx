@@ -57,7 +57,7 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
 
       if (result.success && result.data && "quizId" in result.data) {
         await update({ onboardingCompleted: true });
-        router.push("/dashboard"); 
+        router.push(`/dashboard?quiz=${result.data.quizId}`);
       } else {
         toast.error(result.error || "Failed to generate quiz");
         setIsProcessing(false);
@@ -71,10 +71,10 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
 
   if (isProcessing) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-6">
-        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <h2 className="text-headline-small text-foreground">Generating your quiz...</h2>
-        <p className="text-body-medium text-muted-foreground">AI is crafting {questionCount} questions to test your knowledge.</p>
+      <div className="w-full flex flex-col items-center animate-in fade-in duration-300">
+        <div className="w-full max-w-3xl pt-12">
+          <p className="text-label-large text-muted-foreground animate-pulse">Generating your quiz...</p>
+        </div>
       </div>
     );
   }
@@ -113,7 +113,7 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
               
               <Input 
                 autoFocus
-                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-large pl-0 pr-4 h-14 truncate"
+                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-large max-sm:text-sm pl-0 pr-4 h-14 truncate"
                 placeholder="What topic should the quiz be about?"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
@@ -139,8 +139,8 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
           />
         </div>
 
-        <div className="flex justify-center">
-          <Button size="lg" className="rounded-full px-8 h-14" onClick={handleGenerate}>
+        <div className="flex justify-center w-full px-4 sm:px-0">
+          <Button size="lg" className="rounded-full px-8 h-14 w-full sm:w-auto" onClick={handleGenerate}>
             Generate Quiz
           </Button>
         </div>
@@ -202,7 +202,7 @@ function QuestionCountDropdown({ value, onChange, open, onOpenChange }: Question
           }}
           className="w-full h-14 rounded-full border-none bg-transparent flex items-center gap-2 focus-visible:outline-none transition-all"
         >
-          <span className={`flex-1 text-left text-[0.875rem] pl-2 truncate ${value === "" ? "text-muted-foreground/50" : "text-foreground"}`}>
+          <span className={`flex-1 text-left text-[0.875rem] max-sm:text-base pl-2 truncate ${value === "" ? "text-muted-foreground/50" : "text-foreground"}`}>
             {value === "" ? "Number of questions" : value}
           </span>
           <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 mr-1 ${open ? "rotate-180" : ""}`} />

@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import {
   Bot,
-  LayoutGrid,
   BookOpen,
   CalendarDays,
   FileText,
@@ -16,6 +15,7 @@ import {
   Sparkles,
   ChevronUp,
   History,
+  Trash2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -39,9 +39,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const navItems = [
   { href: "/chatmate", label: "Chatmate", icon: Bot, strokeWidth: 1.25 },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, strokeWidth: 1.25 },
   { href: "/courses", label: "Courses", icon: BookOpen, strokeWidth: 1.25 },
-  { href: "/quiz", label: "Quiz", icon: HelpCircle, strokeWidth: 1.25 },
   { href: "/progress", label: "Progress", icon: TrendingUp, strokeWidth: 1.25 },
 ];
 
@@ -55,6 +53,7 @@ interface HistoryItem {
 export function AppSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { data: session } = useSession();
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const initials = session?.user?.name
@@ -102,9 +101,8 @@ export function AppSidebar() {
           <SidebarMenu>
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isChatmateWithParam = item.href === "/chatmate" && (searchParams.get("summaryId") || searchParams.get("flow"));
-              const isActive = !isChatmateWithParam && (pathname === item.href ||
-                (item.href !== "/dashboard" && pathname.startsWith(item.href)));
+              const isChatmateWithParam = item.href === "/chatmate" && (!!searchParams.get("summaryId") || !!searchParams.get("quiz"));
+              const isActive = !isChatmateWithParam && (pathname === item.href || pathname.startsWith(item.href));
 
               return (
                 <SidebarMenuItem key={item.href}>
@@ -120,23 +118,59 @@ export function AppSidebar() {
 
         {historyItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden text-xs text-foreground font-bold">Recents</SidebarGroupLabel>
+            <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden text-sm text-foreground font-bold tracking-tight">Recents</SidebarGroupLabel>
             <SidebarMenu>
               {historyItems.map((item) => {
                 const Icon = typeIcon(item.type);
                 const itemUrl = new URL(item.href, "http://x");
                 const paramKey = item.type === "study_plan" ? "planId" : item.type === "summary" ? "summaryId" : null;
-                const isActive = pathname === item.href
-                  || (pathname === itemUrl.pathname
-                    && (paramKey
-                      ? itemUrl.searchParams.get(paramKey) === searchParams.get(paramKey)
-                      : true));
+                const isActive = item.type === "quiz"
+                  ? searchParams.get("quiz") === item.id
+                  : pathname === item.href
+                    || (pathname === itemUrl.pathname
+                      && (paramKey
+                        ? itemUrl.searchParams.get(paramKey) === searchParams.get(paramKey)
+                        : true));
+                const isViewing = item.type === "quiz"
+                  ? searchParams.get("quiz") === item.id
+                  : item.type === "study_plan"
+                    ? pathname === "/study-plan" && searchParams.get("planId") === item.id
+                    : pathname === "/chatmate" && searchParams.get("summaryId") === item.id;
+
+                const handleDelete = async () => {
+                  const endpoint = item.type === "study_plan"
+                    ? `/api/study-plans/${item.id}`
+                    : item.type === "summary"
+                      ? `/api/summary/${item.id}`
+                      : `/api/quiz/${item.id}`;
+                  try {
+                    const res = await fetch(endpoint, { method: "DELETE" });
+                    if (res.ok) {
+                      window.dispatchEvent(new CustomEvent("history-updated"));
+                      if (isViewing) {
+                        const others = historyItems.filter((h) => h.id !== item.id);
+                        if (others.length > 0) {
+                          router.push(others[0].href);
+                        } else {
+                          router.push("/chatmate");
+                        }
+                      }
+                    }
+                  } catch { }
+                };
+
                 return (
-                  <SidebarMenuItem key={`${item.type}-${item.id}`}>
-                    <SidebarMenuButton isActive={isActive} tooltip={item.title} render={<Link href={item.href} />}>
-                      <Icon strokeWidth={isActive ? 2 : 1.25} className="size-4" />
-                      <span className="truncate text-label-small">{item.title}</span>
+                  <SidebarMenuItem key={`${item.type}-${item.id}`} className="group/item relative">
+                    <SidebarMenuButton isActive={isActive} tooltip={item.title} render={<Link href={item.href} />} className="pr-8">
+                      <Icon strokeWidth={isActive ? 2 : 1.25} className="size-4 shrink-0" />
+                      <span className="truncate text-sm min-w-0">{item.title}</span>
                     </SidebarMenuButton>
+                    <button
+                      onClick={handleDelete}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 size-6 flex items-center justify-center rounded-md text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover/item:opacity-100 transition-all cursor-pointer"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
                   </SidebarMenuItem>
                 );
               })}

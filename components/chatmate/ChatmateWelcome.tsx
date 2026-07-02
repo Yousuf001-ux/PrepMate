@@ -26,26 +26,26 @@ export function ChatmateWelcome({ onSelectGoal }: ChatmateWelcomeProps) {
       <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4 sm:px-0">
         <Button
           variant="outline"
-          className="h-12 sm:h-14 px-4 sm:px-8 text-body-small sm:text-body-medium rounded-full border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all w-full sm:w-auto"
+          className="h-14 px-8 text-body-medium rounded-full border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all w-full sm:w-auto"
           onClick={() => onSelectGoal("STUDY_PLAN")}
         >
-          <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+          <Calendar className="h-5 w-5" />
           Generate Study Plan
         </Button>
         <Button
           variant="outline"
-          className="h-12 sm:h-14 px-4 sm:px-8 text-body-small sm:text-body-medium rounded-full border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all w-full sm:w-auto"
+          className="h-14 px-8 text-body-medium rounded-full border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all w-full sm:w-auto"
           onClick={() => onSelectGoal("SUMMARIZE_TOPIC")}
         >
-          <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
+          <FileText className="h-5 w-5" />
           Summarize Topic
         </Button>
         <Button
           variant="outline"
-          className="h-12 sm:h-14 px-4 sm:px-8 text-body-small sm:text-body-medium rounded-full border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all w-full sm:w-auto"
+          className="h-14 px-8 text-body-medium rounded-full border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all w-full sm:w-auto"
           onClick={() => onSelectGoal("GENERATE_QUIZ")}
         >
-          <BrainCircuit className="h-4 w-4 sm:h-5 sm:w-5" />
+          <BrainCircuit className="h-5 w-5" />
           Generate Quiz
         </Button>
       </div>

@@ -3,10 +3,25 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CalendarDays, CheckCircle2, BookOpen, TrendingUp } from "lucide-react";
+import { Suspense } from "react";
+import { DashboardPageClient } from "@/components/dashboard/DashboardPageClient";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
+
+  const params = await searchParams;
+  if (params.quiz) {
+    return (
+      <Suspense fallback={null}>
+        <DashboardPageClient />
+      </Suspense>
+    );
+  }
 
   const courseCount = await prisma.course.count({
     where: { userId: session.user.id },

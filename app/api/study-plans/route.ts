@@ -22,7 +22,7 @@ export async function GET() {
       where: { userId: session.user.id },
       include: {
         sessions: {
-          include: { topic: true },
+          include: { topic: { include: { course: true } } },
           orderBy: { scheduledDate: "asc" },
         },
       },

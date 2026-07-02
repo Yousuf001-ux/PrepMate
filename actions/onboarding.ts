@@ -59,8 +59,7 @@ export async function completeOnboarding(input: OnboardingInput) {
       });
 
       // Persist in DB
-      await prisma.$transaction(async (tx) => {
-        // Create courses and topics
+      const planId = await prisma.$transaction(async (tx) => {
         const dbCourses = await Promise.all(
           parsed.data.courses.map(async (c) => {
             const dbCourse = await tx.course.create({
@@ -78,7 +77,6 @@ export async function completeOnboarding(input: OnboardingInput) {
           })
         );
 
-        // Find topic IDs to link sessions
         const getTopicId = (courseName: string, topicName: string) => {
           for (const c of dbCourses) {
             if (c.name.toLowerCase() === courseName.toLowerCase()) {
@@ -86,7 +84,6 @@ export async function completeOnboarding(input: OnboardingInput) {
               if (t) return t.id;
             }
           }
-          // Fallback if AI hallucinates names: use the first topic of the first course
           return dbCourses[0].topics[0].id; 
         };
 
@@ -108,9 +105,11 @@ export async function completeOnboarding(input: OnboardingInput) {
           where: { id: userId },
           data: { onboardingCompleted: true }
         });
+
+        return dbStudyPlan.id;
       });
 
-      return { success: true as const, data: { status: "created" } };
+      return { success: true as const, data: { planId } };
 
     } else if (input.flow === "SUMMARIZE_TOPIC") {
       const parsed = SummarizeTopicDataSchema.safeParse(input.data);

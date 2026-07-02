@@ -49,7 +49,7 @@ export async function chatmateStudyPlan(data: z.infer<typeof StudyPlanDataSchema
       startDate: new Date().toISOString().split("T")[0],
     });
 
-    await prisma.$transaction(async (tx) => {
+    const planId = await prisma.$transaction(async (tx) => {
       const dbCourses = await Promise.all(
         parsed.data.courses.map(async (c) => {
           const dbCourse = await tx.course.create({
@@ -75,7 +75,7 @@ export async function chatmateStudyPlan(data: z.infer<typeof StudyPlanDataSchema
         return dbCourses[0].topics[0].id;
       };
 
-      await tx.studyPlan.create({
+      const sp = await tx.studyPlan.create({
         data: {
           userId,
           name: parsed.data.sessionName,
@@ -88,9 +88,11 @@ export async function chatmateStudyPlan(data: z.infer<typeof StudyPlanDataSchema
           },
         },
       });
+
+      return sp.id;
     });
 
-    return { success: true as const, data: { status: "created" } };
+    return { success: true as const, data: { planId } };
   } catch (error) {
     console.error("[chatmate-study-plan]", error);
     return { success: false as const, error: "Something went wrong while building your study plan. Try again." };

@@ -16,6 +16,7 @@ import {
   Check,
   Loader2,
 } from "lucide-react"
+import { toast } from "sonner"
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
@@ -187,6 +188,11 @@ export default function StudyPlanPage() {
   const [selectedPlanId, setSelectedPlanId] = useState<string>("")
 
   useEffect(() => {
+    setCurrentMonth(selectedDate.getMonth());
+    setCurrentYear(selectedDate.getFullYear());
+  }, [selectedDate])
+
+  useEffect(() => {
     async function loadData() {
       try {
         const planRes = await fetch("/api/study-plans")
@@ -256,7 +262,10 @@ export default function StudyPlanPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       })
-      if (!res.ok) throw new Error("Failed to update")
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null)
+        throw new Error(errData?.error || `Request failed (${res.status})`)
+      }
       const json = await res.json()
       const updated = json.data
 
@@ -285,10 +294,11 @@ export default function StudyPlanPage() {
       )
     } catch (err) {
       console.error(err)
+      toast.error("Failed to update session status")
     } finally {
       setUpdatingSessionId(null)
     }
-  }, [])
+  }, [selectedPlanId])
 
   const prevMonth = () => {
     if (currentMonth === 0) {
@@ -437,19 +447,35 @@ export default function StudyPlanPage() {
 
         <div className="xl:w-80 2xl:w-96 shrink-0">
           <div className="rounded-xl border border-border/20 bg-card h-full">
-            <div className="px-5 py-3 border-b border-border/20">
-              <h3 className="text-sm font-semibold text-foreground">
-                {selectedDate.toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {selectedSessions.length > 0
-                  ? `${selectedSessions.length} session${selectedSessions.length > 1 ? "s" : ""}`
-                  : "No sessions scheduled"}
-              </p>
+            <div className="px-5 py-3 border-b border-border/20 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {selectedDate.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {selectedSessions.length > 0
+                    ? `${selectedSessions.length} session${selectedSessions.length > 1 ? "s" : ""}`
+                    : "No sessions scheduled"}
+                </p>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setSelectedDate(new Date(selectedDate.getTime() - 86400000))}
+                  className="inline-flex items-center justify-center rounded-lg size-7 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                >
+                  <ChevronLeft className="size-4" />
+                </button>
+                <button
+                  onClick={() => setSelectedDate(new Date(selectedDate.getTime() + 86400000))}
+                  className="inline-flex items-center justify-center rounded-lg size-7 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                >
+                  <ChevronRight className="size-4" />
+                </button>
+              </div>
             </div>
             <div className="p-3 flex flex-col gap-2 max-h-[400px] overflow-y-auto">
               {selectedSessions.length === 0 ? (
@@ -465,17 +491,11 @@ export default function StudyPlanPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">
-                          {session.topic.name}
+                          {session.topic.course?.name ? `${session.topic.course.name}: ${session.topic.name}` : session.topic.name}
                         </p>
                         <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                           <Clock className="size-3 shrink-0" />
                           <span>{formatDuration(session.durationMinutes)}</span>
-                          {session.topic.course?.name && (
-                            <>
-                              <span>&middot;</span>
-                              <span className="truncate">{session.topic.course.name}</span>
-                            </>
-                          )}
                         </div>
                       </div>
                       {session.status === "complete" ? (

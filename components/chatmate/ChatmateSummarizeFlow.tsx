@@ -108,13 +108,30 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
     }
   }
 
+  const summarizeMessages = [
+    "Summarizing your topic...",
+    "Extracting key concepts...",
+    "Simplifying complex ideas...",
+    "Organizing your summary...",
+    "Almost there...",
+  ];
+  const [summarizeIndex, setSummarizeIndex] = useState(0);
+
+  useEffect(() => {
+    if (!isProcessing) return;
+    const interval = setInterval(() => {
+      setSummarizeIndex((i) => (i + 1) % summarizeMessages.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [isProcessing]);
+
   if (summary) {
     const explanation = isSimplified && simplifiedExplanation ? simplifiedExplanation : summary.explanation;
     return (
       <div className="w-full h-full overflow-y-auto flex flex-col">
         <div className="w-full max-w-2xl mx-auto mt-24 pb-6">
           <p className="text-body-medium text-muted-foreground">Here&apos;s a summary of {summary.title}</p>
-          <Card className="w-full border border-border/20 mt-4">
+          <Card className="w-full border border-border/20 mt-4 ring-0">
           <CardContent className="pt-2 px-14 pb-6 space-y-6">
           <div className="flex items-center justify-end gap-4 -mr-10">
             <TooltipProvider>
@@ -182,8 +199,8 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
   if (isProcessing) {
     return (
       <div className="w-full flex flex-col items-center animate-in fade-in duration-300">
-        <div className="w-full max-w-2xl mt-32">
-          <p className="text-body-medium text-muted-foreground animate-pulse">Generating your summary...</p>
+        <div className="w-full max-w-3xl pt-12">
+          <p className="text-label-large text-muted-foreground animate-pulse">{summarizeMessages[summarizeIndex]}</p>
         </div>
       </div>
     );
@@ -221,7 +238,7 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
 
           <Input
             autoFocus
-            className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-medium sm:text-body-large pl-0 pr-4 h-14 truncate"
+            className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-medium sm:text-body-large max-sm:text-sm pl-0 pr-4 h-14 truncate"
             placeholder={isMobile ? "What do you want summarized?" : "What topic do you want summarized?"}
             value={topic}
             onChange={(e) => setTopic(e.target.value)}

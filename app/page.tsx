@@ -27,7 +27,7 @@ const features = [
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen max-sm:min-h-[100dvh] max-sm:overflow-hidden">
       <header className="flex items-center justify-between px-4 py-4 sm:px-10">
         <span
           className="text-primary"

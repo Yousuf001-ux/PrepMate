@@ -17,6 +17,7 @@ export default function ChatmatePage() {
   const [step, setStep] = useState<ChatmateStep>(() => {
     if (summaryId) return "VIEW_SUMMARY";
     if (flow === "study_plan") return "STUDY_PLAN";
+    if (flow === "quiz") return "GENERATE_QUIZ";
     return "WELCOME";
   });
 
@@ -25,6 +26,8 @@ export default function ChatmatePage() {
       setStep("VIEW_SUMMARY");
     } else if (flow === "study_plan") {
       setStep("STUDY_PLAN");
+    } else if (flow === "quiz") {
+      setStep("GENERATE_QUIZ");
     } else {
       setStep("WELCOME");
     }

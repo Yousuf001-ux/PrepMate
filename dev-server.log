@@ -1,0 +1,11 @@
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://172.20.10.3:3000
+- Environments: .env.local, .env
+✓ Ready in 452ms
+
+○ Compiling /quiz ...
+ GET /quiz 200 in 6.5s (next.js: 5.8s, proxy.ts: 106ms, application-code: 659ms)
+ GET /api/history 200 in 808ms (next.js: 641ms, application-code: 167ms)
+ GET /api/auth/session 200 in 1474ms (next.js: 1457ms, application-code: 16ms)
+[?25h

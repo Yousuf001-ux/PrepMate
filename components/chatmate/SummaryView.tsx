@@ -88,7 +88,7 @@ export function SummaryView({ summaryId, onNew }: SummaryViewProps) {
     <div className="w-full h-full overflow-y-auto flex flex-col">
       <div className="w-full max-w-2xl mx-auto mt-24 pb-6">
         <p className="text-body-medium text-muted-foreground">Here&apos;s a summary of {summary.title}</p>
-        <Card className="w-full border border-border/20 mt-4">
+        <Card className="w-full border border-border/20 mt-4 ring-0">
           <CardContent className="pt-2 px-14 pb-6 space-y-6">
             <div className="flex items-center justify-end gap-4 -mr-10">
               <TooltipProvider>
