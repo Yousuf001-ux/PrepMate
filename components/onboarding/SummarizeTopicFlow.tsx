@@ -54,7 +54,8 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
       const result = await completeOnboarding({
         flow: "SUMMARIZE_TOPIC",
         data: {
-          topic: topic || (file ? `Summarize the content of ${file.name}` : "Unknown topic")
+          topic: topic || (file ? `Summarize the content of ${file.name}` : "Unknown topic"),
+          fileName: file?.name
         }
       });
 

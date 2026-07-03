@@ -7,6 +7,7 @@ import { z } from "zod";
 
 const SummarizerSchema = z.object({
   topic: z.string().min(1).max(500),
+  fileName: z.string().optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -64,10 +65,14 @@ export async function POST(req: NextRequest) {
 
     const result = await generateSummary(parsed.data.topic);
 
+    const title = parsed.data.fileName
+      ? parsed.data.fileName.replace(/\.[^/.]+$/, "").substring(0, 100)
+      : parsed.data.topic.substring(0, 100);
+
     const summary = await prisma.summary.create({
       data: {
         userId: session.user.id,
-        title: parsed.data.topic.substring(0, 100),
+        title,
         content: {
           explanation: result.summary,
           keyConcepts: result.keyConcepts,
@@ -75,7 +80,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ data: { id: summary.id, explanation: result.summary, keyConcepts: result.keyConcepts, title: parsed.data.topic } });
+    return NextResponse.json({ data: { id: summary.id, explanation: result.summary, keyConcepts: result.keyConcepts, title } });
   } catch (error) {
     console.error("[summarizer POST]", error);
     return NextResponse.json(

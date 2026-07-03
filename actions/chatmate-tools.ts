@@ -22,6 +22,7 @@ const StudyPlanDataSchema = z.object({
 
 const SummarizeTopicDataSchema = z.object({
   topic: z.string().min(1),
+  fileName: z.string().optional(),
 });
 
 const GenerateQuizDataSchema = z.object({
@@ -99,20 +100,24 @@ export async function chatmateStudyPlan(data: z.infer<typeof StudyPlanDataSchema
   }
 }
 
-export async function chatmateSummarize(topic: string) {
+export async function chatmateSummarize(topic: string, fileName?: string) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return { success: false as const, error: "Unauthorized" };
 
   try {
-    const parsed = SummarizeTopicDataSchema.safeParse({ topic });
+    const parsed = SummarizeTopicDataSchema.safeParse({ topic, fileName });
     if (!parsed.success) return { success: false as const, error: "Invalid input" };
 
     const aiSummary = await generateSummary(parsed.data.topic);
 
+    const title = parsed.data.fileName
+      ? parsed.data.fileName.replace(/\.[^/.]+$/, "").substring(0, 100)
+      : parsed.data.topic.substring(0, 100);
+
     const summary = await prisma.summary.create({
       data: {
         userId: session.user.id,
-        title: parsed.data.topic.substring(0, 100),
+        title,
         content: {
           explanation: aiSummary.summary,
           keyConcepts: aiSummary.keyConcepts,
@@ -120,7 +125,7 @@ export async function chatmateSummarize(topic: string) {
       },
     });
 
-    return { success: true as const, data: { id: summary.id, title: parsed.data.topic.substring(0, 100), explanation: aiSummary.summary, keyConcepts: aiSummary.keyConcepts } };
+    return { success: true as const, data: { id: summary.id, title, explanation: aiSummary.summary, keyConcepts: aiSummary.keyConcepts } };
   } catch (error) {
     console.error("[chatmate-summarize]", error);
     return { success: false as const, error: "Unable to generate summary. Try again." };

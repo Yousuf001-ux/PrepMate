@@ -55,7 +55,8 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
     setIsProcessing(true);
     try {
       const result = await chatmateSummarize(
-        topic || (file ? `Summarize the content of ${file.name}` : "Unknown topic")
+        topic || (file ? `Summarize the content of ${file.name}` : "Unknown topic"),
+        file?.name
       );
 
       if (result.success) {

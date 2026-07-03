@@ -22,6 +22,7 @@ const StudyPlanDataSchema = z.object({
 
 const SummarizeTopicDataSchema = z.object({
   topic: z.string().min(1),
+  fileName: z.string().optional(),
 });
 
 const GenerateQuizDataSchema = z.object({
@@ -117,12 +118,16 @@ export async function completeOnboarding(input: OnboardingInput) {
 
       const aiSummary = await generateSummary(parsed.data.topic);
 
+      const title = parsed.data.fileName
+        ? parsed.data.fileName.replace(/\.[^/.]+$/, "").substring(0, 100)
+        : parsed.data.topic.substring(0, 100);
+
       let summaryId = "";
       await prisma.$transaction(async (tx) => {
         const summary = await tx.summary.create({
           data: {
             userId,
-            title: parsed.data.topic.substring(0, 100),
+            title,
             content: {
               explanation: aiSummary.summary,
               keyConcepts: aiSummary.keyConcepts,
@@ -137,7 +142,7 @@ export async function completeOnboarding(input: OnboardingInput) {
         });
       });
 
-      return { success: true as const, data: { id: summaryId, title: parsed.data.topic.substring(0, 100), explanation: aiSummary.summary, keyConcepts: aiSummary.keyConcepts } };
+      return { success: true as const, data: { id: summaryId, title, explanation: aiSummary.summary, keyConcepts: aiSummary.keyConcepts } };
 
     } else if (input.flow === "GENERATE_QUIZ") {
       const parsed = GenerateQuizDataSchema.safeParse(input.data);
