@@ -66,7 +66,7 @@ function ResetPasswordForm() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-2 text-center">
-        <h1 className="text-headline-medium text-foreground">Set new password</h1>
+        <h1 className="text-headline-large text-foreground font-semibold">Set new password</h1>
         <p className="text-body-small text-muted-foreground">
           Must be at least 8 characters
         </p>
@@ -84,6 +84,7 @@ function ResetPasswordForm() {
             required
             minLength={8}
             autoComplete="new-password"
+            autoFocus
           />
         </div>
 
@@ -91,7 +92,7 @@ function ResetPasswordForm() {
           <p className="text-destructive text-body-small text-center">{error}</p>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full h-12" disabled={loading}>
           {loading ? "Resetting..." : "Reset password"}
         </Button>
       </form>

@@ -8,6 +8,7 @@ import { generateStudyPlan } from "@/lib/ai/study-plan";
 import { generateSummary } from "@/lib/ai/summarizer";
 import { generateQuiz } from "@/lib/ai/quiz";
 import { parseFile } from "@/lib/file-parser";
+import { sendWelcomeEmail } from "@/lib/email";
 
 const CourseInputSchema = z.object({
   name: z.string().min(1),
@@ -116,6 +117,10 @@ export async function completeOnboarding(input: OnboardingInput) {
         return dbStudyPlan.id;
       });
 
+      if (session.user.email) {
+        sendWelcomeEmail(session.user.email, session.user.name || "there").catch(console.error);
+      }
+
       return { success: true as const, data: { planId } };
 
     } else if (input.flow === "SUMMARIZE_TOPIC") {
@@ -155,6 +160,10 @@ export async function completeOnboarding(input: OnboardingInput) {
           data: { onboardingCompleted: true }
         });
       });
+
+      if (session.user.email) {
+        sendWelcomeEmail(session.user.email, session.user.name || "there").catch(console.error);
+      }
 
       return { success: true as const, data: { id: summaryId, title, explanation: aiSummary.summary, keyConcepts: aiSummary.keyConcepts } };
 
@@ -208,6 +217,10 @@ export async function completeOnboarding(input: OnboardingInput) {
 
         return { quizId: quiz.id };
       });
+
+      if (session.user.email) {
+        sendWelcomeEmail(session.user.email, session.user.name || "there").catch(console.error);
+      }
 
       return { success: true as const, data: result };
     }

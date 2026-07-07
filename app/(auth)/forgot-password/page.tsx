@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-2 text-center">
-        <h1 className="text-headline-medium text-foreground">Reset password</h1>
+        <h1 className="text-headline-large text-foreground font-semibold">Reset password</h1>
         <p className="text-body-small text-muted-foreground">
           Enter your email and we&apos;ll send you a reset link
         </p>
@@ -72,6 +72,7 @@ export default function ForgotPasswordPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
+            autoFocus
           />
         </div>
 
@@ -79,7 +80,7 @@ export default function ForgotPasswordPage() {
           <p className="text-destructive text-body-small text-center">{error}</p>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full h-12" disabled={loading}>
           {loading ? "Sending..." : "Send reset link"}
         </Button>
       </form>
