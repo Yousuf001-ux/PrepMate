@@ -51,25 +51,8 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
-        // If onboarding isn't completed, check if user has existing data
-        if (!user.onboardingCompleted) {
-          const existingData = await prisma.course.findFirst({
-            where: { userId: user.id },
-            select: { id: true },
-          });
-          const completed = !!existingData;
-          if (completed) {
-            await prisma.user.update({
-              where: { id: user.id },
-              data: { onboardingCompleted: true },
-            });
-          }
-          token.onboardingCompleted = completed;
-        } else {
-          token.onboardingCompleted = user.onboardingCompleted;
-        }
+        token.onboardingCompleted = user.onboardingCompleted;
       }
-      // Update token if session is updated manually
       if (trigger === "update" && session?.onboardingCompleted !== undefined) {
         token.onboardingCompleted = session.onboardingCompleted;
       }
