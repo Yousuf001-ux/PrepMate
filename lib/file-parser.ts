@@ -1,5 +1,3 @@
-import { PDFParse } from "pdf-parse";
-
 const MAX_TEXT_LENGTH = 15000;
 
 function stripBom(text: string): string {
@@ -11,16 +9,17 @@ function truncate(text: string): string {
 }
 
 async function parsePdf(buffer: Buffer): Promise<string> {
-  const originalWarn = console.warn;
-  console.warn = () => {};
-  const parser = new PDFParse({ data: new Uint8Array(buffer) });
-  try {
-    const result = await parser.getText();
-    return truncate(stripBom(result.text));
-  } finally {
-    console.warn = originalWarn;
-    await parser.destroy();
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const data = new Uint8Array(buffer);
+  const doc = await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
+  const pages = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
+    const text = content.items.map((item: any) => item.str).join(" ");
+    pages.push(text);
   }
+  return truncate(stripBom(pages.join("\n")));
 }
 
 async function parseDocx(buffer: Buffer): Promise<string> {
