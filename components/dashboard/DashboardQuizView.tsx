@@ -105,7 +105,7 @@ export function DashboardQuizView() {
   };
 
   const handleEndQuiz = () => {
-    router.push("/dashboard");
+    router.push("/chatmate");
   };
 
   if (loading) {

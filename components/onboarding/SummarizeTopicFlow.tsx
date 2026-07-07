@@ -10,6 +10,18 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result.split(",")[1]);
+    };
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
 interface SummarizeTopicFlowProps {
   onBack: () => void;
 }
@@ -33,8 +45,13 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
       const validTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain", "image/png", "image/jpeg"];
+      const MAX_FILE_SIZE = 10 * 1024 * 1024;
       if (!validTypes.includes(selectedFile.type)) {
         toast.error("Unsupported file format.");
+        return;
+      }
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        toast.error("File is too large. Maximum size is 10 MB.");
         return;
       }
       setFile(selectedFile);
@@ -49,13 +66,21 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
 
     setIsProcessing(true);
     try {
-      // In MVP, we would extract text from the file client-side or just pass the topic description.
-      // For now we'll pass the topic string to the server action.
+      let fileBase64: string | undefined;
+      let fileType: string | undefined;
+
+      if (file) {
+        fileBase64 = await readFileAsBase64(file);
+        fileType = file.type;
+      }
+
       const result = await completeOnboarding({
         flow: "SUMMARIZE_TOPIC",
         data: {
           topic: topic || (file ? `Summarize the content of ${file.name}` : "Unknown topic"),
-          fileName: file?.name
+          fileName: file?.name,
+          fileBase64,
+          fileType,
         }
       });
 

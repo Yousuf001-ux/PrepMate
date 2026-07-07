@@ -3,11 +3,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { generateSummary } from "@/lib/ai";
 import { prisma } from "@/lib/db";
+import { parseFile } from "@/lib/file-parser";
 import { z } from "zod";
 
+export const maxDuration = 60;
+
 const SummarizerSchema = z.object({
-  topic: z.string().min(1).max(500),
+  topic: z.string().min(1).max(15000),
   fileName: z.string().optional(),
+  fileBase64: z.string().optional(),
+  fileType: z.string().optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -63,7 +68,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
-    const result = await generateSummary(parsed.data.topic);
+    let contentToSummarize = parsed.data.topic;
+
+    if (parsed.data.fileBase64 && parsed.data.fileType && parsed.data.fileName) {
+      const buffer = Buffer.from(parsed.data.fileBase64, "base64");
+      const parsedFile = await parseFile(buffer, parsed.data.fileType, parsed.data.fileName);
+      contentToSummarize = parsedFile.text || contentToSummarize;
+    }
+
+    const result = await generateSummary(contentToSummarize);
 
     const title = parsed.data.fileName
       ? parsed.data.fileName.replace(/\.[^/.]+$/, "").substring(0, 100)

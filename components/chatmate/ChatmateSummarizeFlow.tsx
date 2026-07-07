@@ -11,6 +11,18 @@ import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result.split(",")[1]);
+    };
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
 interface ChatmateSummarizeFlowProps {
   onBack: () => void;
 }
@@ -38,8 +50,13 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
       const validTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain", "image/png", "image/jpeg"];
+      const MAX_FILE_SIZE = 10 * 1024 * 1024;
       if (!validTypes.includes(selectedFile.type)) {
         toast.error("Unsupported file format.");
+        return;
+      }
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        toast.error("File is too large. Maximum size is 10 MB.");
         return;
       }
       setFile(selectedFile);
@@ -54,13 +71,22 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
 
     setIsProcessing(true);
     try {
+      let fileBase64: string | undefined;
+      let fileType: string | undefined;
+
+      if (file) {
+        fileBase64 = await readFileAsBase64(file);
+        fileType = file.type;
+      }
+
       const result = await chatmateSummarize(
         topic || (file ? `Summarize the content of ${file.name}` : "Unknown topic"),
-        file?.name
+        file?.name,
+        fileBase64,
+        fileType
       );
 
       if (result.success) {
-        setSummary(result.data);
         window.dispatchEvent(new Event("history-updated"));
         router.replace(`/chatmate?summaryId=${result.data.id}`);
       } else {
@@ -125,77 +151,6 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
     }, 3000);
     return () => clearInterval(interval);
   }, [isProcessing]);
-
-  if (summary) {
-    const explanation = isSimplified && simplifiedExplanation ? simplifiedExplanation : summary.explanation;
-    return (
-      <div className="w-full h-full overflow-y-auto flex flex-col">
-        <div className="w-full max-w-2xl mx-auto max-sm:mt-8 sm:mt-24 pb-6">
-          <p className="text-body-medium text-muted-foreground">Here&apos;s a summary of {summary.title}</p>
-          <Card className="w-full border border-border/20 mt-4 ring-0">
-          <CardContent className="pt-2 px-14 pb-6 space-y-6">
-          <div className="flex items-center justify-end gap-4 -mr-10">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <button
-                      onClick={handleSimplify}
-                      disabled={simplifying}
-                      className={`cursor-pointer transition-colors ${isSimplified ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
-                    >
-                      {simplifying ? <Loader2 className="size-4 animate-spin" /> : <WandSparkles className="size-4" />}
-                    </button>
-                  }
-                />
-                <TooltipContent>
-                  {simplifying ? "Simplifying..." : isSimplified ? "Standard explanation" : "Simpler explanation"}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <button
-              onClick={handleCopy}
-              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            >
-              {copied ? <Check className="size-4 text-green-500" /> : <Copy className="size-4" />}
-            </button>
-          </div>
-          <div className="max-sm:-mx-10">
-            <h3 className="text-title-large text-foreground font-medium mb-2">Simplified Explanation</h3>
-            <div className="space-y-4">
-              {explanation.split("\n\n").map((paragraph: string, idx: number) => (
-                <p
-                  key={idx}
-                  className="text-body-medium text-muted-foreground whitespace-pre-wrap"
-                >
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </div>
-            {summary.keyConcepts && summary.keyConcepts.length > 0 && (
-              <div className="max-sm:-mx-10">
-                <h3 className="text-title-large text-foreground font-medium mb-2">Key Concepts</h3>
-                <ul className="list-disc pl-5 space-y-1">
-                  {summary.keyConcepts.map((concept: string, idx: number) => (
-                    <li key={idx} className="text-body-medium text-muted-foreground">{concept}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </CardContent>
-          </Card>
-        </div>
-        <button
-          onClick={() => { setSummary(null); setTopic(""); setFile(null); router.replace("/chatmate"); }}
-          className="fixed top-6 right-4 md:top-8 md:right-10 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer z-50"
-        >
-          <Plus className="size-4" />
-          New summary
-        </button>
-      </div>
-    );
-  }
 
   if (isProcessing) {
     return (

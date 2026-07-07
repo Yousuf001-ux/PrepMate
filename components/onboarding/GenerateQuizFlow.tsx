@@ -32,7 +32,20 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
         return;
       }
       setFile(selectedFile);
+      setSelectOpen(true);
     }
+  };
+
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(",")[1]);
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleGenerate = async () => {
@@ -47,17 +60,28 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
 
     setIsProcessing(true);
     try {
+      let fileBase64: string | undefined;
+      let fileType: string | undefined;
+
+      if (file) {
+        fileBase64 = await readFileAsBase64(file);
+        fileType = file.type;
+      }
+
       const result = await completeOnboarding({
         flow: "GENERATE_QUIZ",
         data: {
           topic: topic || (file ? `Generate a quiz about the content of ${file.name}` : "Unknown topic"),
-          questionCount: typeof questionCount === "number" ? questionCount : 10
+          questionCount: typeof questionCount === "number" ? questionCount : 10,
+          fileName: file?.name,
+          fileBase64,
+          fileType,
         }
       });
 
       if (result.success && result.data && "quizId" in result.data) {
         await update({ onboardingCompleted: true });
-        router.push(`/dashboard?quiz=${result.data.quizId}`);
+        router.push(`/chatmate?quiz=${result.data.quizId}`);
       } else {
         toast.error(result.error || "Failed to generate quiz");
         setIsProcessing(false);

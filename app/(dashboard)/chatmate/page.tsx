@@ -13,9 +13,11 @@ type ChatmateStep = "WELCOME" | "STUDY_PLAN" | "SUMMARIZE_TOPIC" | "GENERATE_QUI
 export default function ChatmatePage() {
   const searchParams = useSearchParams();
   const summaryId = searchParams.get("summaryId");
+  const quizId = searchParams.get("quiz");
   const flow = searchParams.get("flow");
   const [step, setStep] = useState<ChatmateStep>(() => {
     if (summaryId) return "VIEW_SUMMARY";
+    if (quizId) return "GENERATE_QUIZ";
     if (flow === "study_plan") return "STUDY_PLAN";
     if (flow === "quiz") return "GENERATE_QUIZ";
     return "WELCOME";
@@ -24,6 +26,8 @@ export default function ChatmatePage() {
   useEffect(() => {
     if (summaryId) {
       setStep("VIEW_SUMMARY");
+    } else if (quizId) {
+      setStep("GENERATE_QUIZ");
     } else if (flow === "study_plan") {
       setStep("STUDY_PLAN");
     } else if (flow === "quiz") {
@@ -31,7 +35,7 @@ export default function ChatmatePage() {
     } else {
       setStep("WELCOME");
     }
-  }, [summaryId, flow]);
+  }, [summaryId, quizId, flow]);
 
   return (
     <div className="flex-1 flex flex-col items-center w-full h-full">
@@ -57,7 +61,7 @@ export default function ChatmatePage() {
       )}
       {step === "GENERATE_QUIZ" && (
         <div className="flex-1 flex flex-col w-full">
-          <ChatmateQuizFlow onBack={() => setStep("WELCOME")} />
+          <ChatmateQuizFlow onBack={() => setStep("WELCOME")} quizId={quizId ?? undefined} />
         </div>
       )}
     </div>

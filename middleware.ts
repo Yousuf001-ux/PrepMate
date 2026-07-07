@@ -12,7 +12,7 @@ export default withAuth(
         return NextResponse.redirect(new URL("/onboarding", req.url));
       }
       if (token.onboardingCompleted && isOnboardingRoute) {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
+        return NextResponse.redirect(new URL("/chatmate", req.url));
       }
     }
 

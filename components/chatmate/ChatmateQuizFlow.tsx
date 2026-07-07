@@ -24,9 +24,10 @@ interface QuizData {
 
 interface ChatmateQuizFlowProps {
   onBack: () => void;
+  quizId?: string;
 }
 
-export function ChatmateQuizFlow({ onBack }: ChatmateQuizFlowProps) {
+export function ChatmateQuizFlow({ onBack, quizId }: ChatmateQuizFlowProps) {
   const router = useRouter();
   const [topic, setTopic] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -37,6 +38,25 @@ export function ChatmateQuizFlow({ onBack }: ChatmateQuizFlowProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
+
+  useEffect(() => {
+    if (!quizId) return;
+    setIsProcessing(true);
+    fetch(`/api/quiz/${quizId}`)
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.data) {
+          setQuizData({ quizId: res.data.quizId, questions: res.data.questions });
+          if (res.data.attempt) {
+            setSelectedAnswers(res.data.attempt.answers as Record<number, string>);
+            setShowResults(true);
+          }
+        }
+        setIsProcessing(false);
+      })
+      .catch(() => setIsProcessing(false));
+  }, [quizId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -47,7 +67,20 @@ export function ChatmateQuizFlow({ onBack }: ChatmateQuizFlowProps) {
         return;
       }
       setFile(selectedFile);
+      setSelectOpen(true);
     }
+  };
+
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(",")[1]);
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleGenerate = async () => {
@@ -62,9 +95,20 @@ export function ChatmateQuizFlow({ onBack }: ChatmateQuizFlowProps) {
 
     setIsProcessing(true);
     try {
+      let fileBase64: string | undefined;
+      let fileType: string | undefined;
+
+      if (file) {
+        fileBase64 = await readFileAsBase64(file);
+        fileType = file.type;
+      }
+
       const result = await chatmateQuiz(
         topic || (file ? `Generate a quiz about the content of ${file.name}` : "Unknown topic"),
-        typeof questionCount === "number" ? questionCount : 10
+        typeof questionCount === "number" ? questionCount : 10,
+        file?.name,
+        fileBase64,
+        fileType
       );
 
       if (result.success && result.data) {
@@ -100,6 +144,15 @@ export function ChatmateQuizFlow({ onBack }: ChatmateQuizFlowProps) {
       }).catch(() => {});
     }
     setShowResults(true);
+  };
+
+  const handleEndQuiz = async () => {
+    try {
+      await fetch(`/api/quiz/${quizData?.quizId}`, { method: "DELETE" });
+    } catch {
+    }
+    window.dispatchEvent(new Event("history-updated"));
+    router.push("/chatmate");
   };
 
   const handlePrevious = () => {
@@ -250,6 +303,7 @@ export function ChatmateQuizFlow({ onBack }: ChatmateQuizFlowProps) {
     const progressPercent = ((currentQuestion + 1) / totalQuestions) * 100;
 
     return (
+      <>
       <div className="w-full flex flex-col items-center animate-in fade-in duration-300">
         <div className="w-full">
           <div className="w-full pt-8 pb-4">
@@ -258,7 +312,7 @@ export function ChatmateQuizFlow({ onBack }: ChatmateQuizFlowProps) {
                   <h2 className="text-foreground font-medium truncate" style={{ fontSize: "1.25rem", letterSpacing: "-0.02em" }}>
                     {topic ? topic.charAt(0).toUpperCase() + topic.slice(1) : "Quiz"}
                   </h2>
-                  <Button variant="ghost" className="!text-destructive bg-destructive/10 hover:bg-destructive/25 font-medium text-label-large" onClick={onBack}>
+                  <Button variant="ghost" className="!text-destructive bg-destructive/10 hover:bg-destructive/25 font-medium text-label-large" onClick={() => setShowEndConfirm(true)}>
                     End Quiz
                   </Button>
                 </div>
@@ -340,6 +394,27 @@ export function ChatmateQuizFlow({ onBack }: ChatmateQuizFlowProps) {
           </div>
         </div>
       </div>
+
+      {showEndConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/10 supports-backdrop-filter:backdrop-blur-xs" onClick={() => setShowEndConfirm(false)} />
+          <div className="relative z-50 w-full max-w-sm rounded-xl bg-popover p-4 shadow-lg">
+            <h3 className="font-heading text-title-medium font-medium">End Quiz?</h3>
+            <p className="mt-2 text-body-small text-muted-foreground">
+              Your progress will be lost and the quiz will be removed. This cannot be undone.
+            </p>
+            <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button variant="ghost" onClick={() => setShowEndConfirm(false)}>
+                Cancel
+              </Button>
+              <Button className="bg-red-500 text-white hover:bg-red-600" onClick={handleEndQuiz}>
+                End Quiz
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
     );
   }
 
@@ -393,16 +468,6 @@ export function ChatmateQuizFlow({ onBack }: ChatmateQuizFlowProps) {
                 onChange={(e) => setTopic(e.target.value)}
               />
             </div>
-
-            {file && (
-              <div className="flex items-center gap-3 px-4 py-3 ml-2 mb-2 bg-primary/5 text-primary rounded-xl w-[calc(100%-16px)]">
-                <FileText className="h-5 w-5" />
-                <span className="text-body-medium flex-1 truncate">{file.name}</span>
-                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => setFile(null)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
           </div>
 
           <QuestionCountDropdown
@@ -412,6 +477,16 @@ export function ChatmateQuizFlow({ onBack }: ChatmateQuizFlowProps) {
             onOpenChange={setSelectOpen}
           />
         </div>
+
+        {file && (
+          <div className="flex items-center gap-3 px-4 py-3 bg-primary/5 text-primary rounded-xl w-full">
+            <FileText className="h-5 w-5" />
+            <span className="text-body-medium flex-1 truncate">{file.name}</span>
+            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => setFile(null)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
 
         <div className="flex justify-center w-full px-4 sm:px-0">
           <Button size="lg" className="rounded-full px-8 h-14 w-full sm:w-auto" onClick={handleGenerate}>

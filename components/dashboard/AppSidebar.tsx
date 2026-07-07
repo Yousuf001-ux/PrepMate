@@ -91,7 +91,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center justify-between px-1">
-          <Link href="/dashboard" className="text-title-medium font-semibold text-primary group-data-[collapsible=icon]:hidden">
+          <Link href="/chatmate" className="text-title-medium font-semibold text-primary group-data-[collapsible=icon]:hidden">
             PrepMate
           </Link>
           <SidebarTrigger className="size-7" />
@@ -119,8 +119,8 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {historyItems.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden text-sm text-foreground font-bold tracking-tight">Recents</SidebarGroupLabel>
+          <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel className="text-sm text-foreground font-bold tracking-tight">Recents</SidebarGroupLabel>
             <SidebarMenu>
               {historyItems.map((item) => {
                 const Icon = typeIcon(item.type);

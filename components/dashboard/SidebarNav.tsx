@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
   BookOpen,
   Calendar,
   FileText,
@@ -17,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/chatmate", label: "Chatmate", icon: Sparkles },
   { href: "/courses", label: "Courses", icon: BookOpen },
   { href: "/study-plan", label: "Study Plan", icon: Calendar },
   { href: "/summarizer", label: "Summarizer", icon: FileText },

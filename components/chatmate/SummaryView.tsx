@@ -122,7 +122,8 @@ export function SummaryView({ summaryId, onNew }: SummaryViewProps) {
                 {explanation.split("\n\n").map((paragraph: string, idx: number) => (
                   <p
                     key={idx}
-                    className="text-body-medium text-muted-foreground whitespace-pre-wrap"
+                    className="text-body-medium text-muted-foreground whitespace-pre-wrap animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
+                    style={{ animationDelay: `${idx * 120}ms` }}
                   >
                     {paragraph}
                   </p>
@@ -134,7 +135,11 @@ export function SummaryView({ summaryId, onNew }: SummaryViewProps) {
                 <h3 className="text-title-large text-foreground font-medium mb-2">Key Concepts</h3>
                 <ul className="list-disc pl-5 space-y-1">
                   {summary.keyConcepts.map((concept: string, idx: number) => (
-                    <li key={idx} className="text-body-medium text-muted-foreground">{concept}</li>
+                    <li
+                      key={idx}
+                      className="text-body-medium text-muted-foreground animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
+                      style={{ animationDelay: `${(idx + explanation.split("\n\n").length) * 120}ms` }}
+                    >{concept}</li>
                   ))}
                 </ul>
               </div>

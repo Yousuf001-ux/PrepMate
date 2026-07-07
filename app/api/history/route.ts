@@ -72,7 +72,7 @@ export async function GET() {
         id: q.id,
         type: "quiz",
         title: `Quiz: ${label}`,
-        href: `/dashboard?quiz=${q.id}`,
+        href: `/chatmate?quiz=${q.id}`,
         createdAt: q.createdAt.toISOString(),
       });
     }

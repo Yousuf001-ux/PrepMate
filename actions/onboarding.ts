@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { generateStudyPlan } from "@/lib/ai/study-plan";
 import { generateSummary } from "@/lib/ai/summarizer";
 import { generateQuiz } from "@/lib/ai/quiz";
+import { parseFile } from "@/lib/file-parser";
 
 const CourseInputSchema = z.object({
   name: z.string().min(1),
@@ -23,11 +24,16 @@ const StudyPlanDataSchema = z.object({
 const SummarizeTopicDataSchema = z.object({
   topic: z.string().min(1),
   fileName: z.string().optional(),
+  fileBase64: z.string().optional(),
+  fileType: z.string().optional(),
 });
 
 const GenerateQuizDataSchema = z.object({
   topic: z.string().min(1),
   questionCount: z.number().min(5).max(50),
+  fileName: z.string().optional(),
+  fileBase64: z.string().optional(),
+  fileType: z.string().optional(),
 });
 
 type OnboardingInput = 
@@ -116,7 +122,15 @@ export async function completeOnboarding(input: OnboardingInput) {
       const parsed = SummarizeTopicDataSchema.safeParse(input.data);
       if (!parsed.success) return { success: false as const, error: "Invalid input" };
 
-      const aiSummary = await generateSummary(parsed.data.topic);
+      let contentToSummarize = parsed.data.topic;
+
+      if (parsed.data.fileBase64 && parsed.data.fileType && parsed.data.fileName) {
+        const buffer = Buffer.from(parsed.data.fileBase64, "base64");
+        const parsedFile = await parseFile(buffer, parsed.data.fileType, parsed.data.fileName);
+        contentToSummarize = parsedFile.text || contentToSummarize;
+      }
+
+      const aiSummary = await generateSummary(contentToSummarize);
 
       const title = parsed.data.fileName
         ? parsed.data.fileName.replace(/\.[^/.]+$/, "").substring(0, 100)
@@ -148,10 +162,20 @@ export async function completeOnboarding(input: OnboardingInput) {
       const parsed = GenerateQuizDataSchema.safeParse(input.data);
       if (!parsed.success) return { success: false as const, error: "Invalid input" };
 
-      // We need a dummy course/topic if the user hasn't created one, because Quiz requires a topicId.
-      // For onboarding, if they do quick Generate Quiz, we'll create a generic Course and Topic.
+      let contentToQuiz = parsed.data.topic;
+
+      if (parsed.data.fileBase64 && parsed.data.fileType && parsed.data.fileName) {
+        const buffer = Buffer.from(parsed.data.fileBase64, "base64");
+        const parsedFile = await parseFile(buffer, parsed.data.fileType, parsed.data.fileName);
+        contentToQuiz = parsedFile.text || contentToQuiz;
+      }
+
+      const name = parsed.data.fileName
+        ? parsed.data.fileName.replace(/\.[^/.]+$/, "").substring(0, 100)
+        : parsed.data.topic.substring(0, 100);
+
       const aiQuiz = await generateQuiz({
-        topic: parsed.data.topic,
+        topic: contentToQuiz,
         numQuestions: parsed.data.questionCount
       });
 
@@ -162,7 +186,7 @@ export async function completeOnboarding(input: OnboardingInput) {
             name: "Quick Quizzes",
             examDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days out
             topics: {
-              create: [{ name: parsed.data.topic.substring(0, 100) }]
+              create: [{ name }]
             }
           },
           include: { topics: true }
