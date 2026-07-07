@@ -24,6 +24,8 @@ model User {
   email           String           @unique
   name            String
   passwordHash    String
+  resetToken      String?          @unique
+  resetTokenExpiry DateTime?
   courses             Course[]
   studyPlans          StudyPlan[]
   quizAttempts        QuizAttempt[]

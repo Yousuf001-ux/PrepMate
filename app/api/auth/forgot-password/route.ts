@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import nodemailer from "nodemailer";
 
@@ -30,12 +29,16 @@ export async function POST(req: NextRequest) {
     }
 
     const rawToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = await bcrypt.hash(rawToken, 12);
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
 
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        passwordHash: user.passwordHash,
+        resetToken: hashedToken,
+        resetTokenExpiry: new Date(Date.now() + 3600000),
       },
     });
 
