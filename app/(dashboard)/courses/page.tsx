@@ -31,7 +31,7 @@ export default async function CoursesPage() {
           <BookOpen className="h-10 w-10 text-muted-foreground" />
           <p className="text-title-medium text-foreground">No courses yet</p>
           <p className="text-body-small text-muted-foreground">
-            Add your first course to start building your study plan.
+            All courses uploaded when generating a study plan will be displayed here.
           </p>
         </div>
       ) : (
