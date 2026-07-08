@@ -1,9 +1,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, BookOpen } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { BookOpen } from "lucide-react";
 import Link from "next/link";
 
 export default async function CoursesPage() {
@@ -34,12 +33,6 @@ export default async function CoursesPage() {
           <p className="text-body-small text-muted-foreground">
             Add your first course to start building your study plan.
           </p>
-          <Link href="/courses/new">
-            <Button variant="default">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Course
-            </Button>
-          </Link>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
