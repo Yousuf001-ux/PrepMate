@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { chatmateQuiz } from "@/actions/chatmate-tools";
+import { prepareFileData } from "@/lib/client-pdf";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -71,18 +72,6 @@ export function ChatmateQuizFlow({ onBack, quizId }: ChatmateQuizFlowProps) {
     }
   };
 
-  const readFileAsBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        resolve(result.split(",")[1]);
-      };
-      reader.onerror = () => reject(new Error("Failed to read file"));
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleGenerate = async () => {
     if (!topic.trim() && !file) {
       toast.error("Please provide a topic description or upload a file.");
@@ -95,16 +84,10 @@ export function ChatmateQuizFlow({ onBack, quizId }: ChatmateQuizFlowProps) {
 
     setIsProcessing(true);
     try {
-      let fileBase64: string | undefined;
-      let fileType: string | undefined;
-
-      if (file) {
-        fileBase64 = await readFileAsBase64(file);
-        fileType = file.type;
-      }
+      const { fileBase64, fileType, extractedText } = await prepareFileData(file);
 
       const result = await chatmateQuiz(
-        topic || (file ? `Generate a quiz about the content of ${file.name}` : "Unknown topic"),
+        extractedText || topic || (file ? `Generate a quiz about the content of ${file.name}` : "Unknown topic"),
         typeof questionCount === "number" ? questionCount : 10,
         file?.name,
         fileBase64,

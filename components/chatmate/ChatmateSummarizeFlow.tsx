@@ -7,21 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { chatmateSummarize } from "@/actions/chatmate-tools";
+import { prepareFileData } from "@/lib/client-pdf";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-
-function readFileAsBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.split(",")[1]);
-    };
-    reader.onerror = () => reject(new Error("Failed to read file"));
-    reader.readAsDataURL(file);
-  });
-}
 
 interface ChatmateSummarizeFlowProps {
   onBack: () => void;
@@ -71,16 +60,10 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
 
     setIsProcessing(true);
     try {
-      let fileBase64: string | undefined;
-      let fileType: string | undefined;
-
-      if (file) {
-        fileBase64 = await readFileAsBase64(file);
-        fileType = file.type;
-      }
+      const { fileBase64, fileType, extractedText } = await prepareFileData(file);
 
       const result = await chatmateSummarize(
-        topic || (file ? `Summarize the content of ${file.name}` : "Unknown topic"),
+        extractedText || topic || (file ? `Summarize the content of ${file.name}` : "Unknown topic"),
         file?.name,
         fileBase64,
         fileType

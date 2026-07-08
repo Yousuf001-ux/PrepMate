@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { completeOnboarding } from "@/actions/onboarding";
+import { prepareFileData } from "@/lib/client-pdf";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -36,18 +37,6 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
     }
   };
 
-  const readFileAsBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        resolve(result.split(",")[1]);
-      };
-      reader.onerror = () => reject(new Error("Failed to read file"));
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleGenerate = async () => {
     if (!topic.trim() && !file) {
       toast.error("Please provide a topic description or upload a file.");
@@ -60,18 +49,12 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
 
     setIsProcessing(true);
     try {
-      let fileBase64: string | undefined;
-      let fileType: string | undefined;
-
-      if (file) {
-        fileBase64 = await readFileAsBase64(file);
-        fileType = file.type;
-      }
+      const { fileBase64, fileType, extractedText } = await prepareFileData(file);
 
       const result = await completeOnboarding({
         flow: "GENERATE_QUIZ",
         data: {
-          topic: topic || (file ? `Generate a quiz about the content of ${file.name}` : "Unknown topic"),
+          topic: extractedText || topic || (file ? `Generate a quiz about the content of ${file.name}` : "Unknown topic"),
           questionCount: typeof questionCount === "number" ? questionCount : 10,
           fileName: file?.name,
           fileBase64,
