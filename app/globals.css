@@ -168,7 +168,7 @@
   --color-tertiary-btn-bg: #1f2127;
   --background: #161618;
   --foreground: var(--color-role-dark-on-background);
-  --card: var(--color-role-dark-surface-container-lowest);
+  --card: #161618;
   --card-foreground: var(--color-role-dark-on-surface);
   --popover: #1f2127;
   --popover-foreground: var(--color-role-dark-on-surface);
