@@ -425,7 +425,7 @@ export function ChatmateQuizFlow({ onBack, quizId }: ChatmateQuizFlowProps) {
         </h2>
 
         <div className="w-full flex flex-col md:flex-row gap-6 items-start">
-          <div className="w-full md:w-[70%] p-2 border border-muted-foreground/20 bg-surface rounded-full flex flex-col items-start gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
+          <div className="w-full md:w-[70%] p-2 border border-muted-foreground/20 bg-muted/30 dark:bg-input/30 rounded-full flex flex-col items-start gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
             <div className="flex w-full items-center gap-0">
               <div className="relative">
                 <input
@@ -437,7 +437,7 @@ export function ChatmateQuizFlow({ onBack, quizId }: ChatmateQuizFlowProps) {
                 />
                 <Label
                   htmlFor="file-upload"
-                  className="cursor-pointer h-12 w-12 flex items-center justify-center bg-muted/50 hover:bg-muted text-muted-foreground rounded-xl transition-colors"
+                  className="cursor-pointer h-12 w-12 flex items-center justify-center hover:bg-muted/20 text-muted-foreground rounded-xl transition-colors"
                 >
                   <Plus className="h-6 w-6" />
                 </Label>
@@ -445,7 +445,7 @@ export function ChatmateQuizFlow({ onBack, quizId }: ChatmateQuizFlowProps) {
 
               <Input
                 autoFocus
-                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-large max-sm:text-base pl-0 pr-4 h-14 truncate"
+                className="flex-1 border-0 bg-transparent dark:bg-transparent shadow-none focus-visible:ring-0 text-body-large max-sm:text-base pl-0 pr-4 h-14 truncate"
                 placeholder="What topic should the quiz be about?"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
@@ -511,7 +511,7 @@ function QuestionCountDropdown({ value, onChange, open, onOpenChange }: Question
 
   return (
     <div ref={containerRef} className="relative w-full md:w-[30%]">
-      <div className="p-2 border border-muted-foreground/20 bg-surface rounded-full focus-within:ring-3 focus-within:ring-ring/50 transition-all">
+      <div className="p-2 border border-muted-foreground/20 bg-muted/30 dark:bg-input/30 rounded-full focus-within:ring-3 focus-within:ring-ring/50 transition-all">
         <button
           type="button"
           onClick={() => onOpenChange(!open)}

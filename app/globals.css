@@ -76,6 +76,7 @@
   --text-label-small--line-height: 1.7;
   --text-label-small--letter-spacing: -0.01em;
   --text-label-small--font-weight: 400;
+  --color-tertiary-btn-bg: var(--color-palette-neutral-95);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -164,18 +165,19 @@
 }
 
 .dark {
-  --background: var(--color-role-dark-background);
+  --color-tertiary-btn-bg: #1f2127;
+  --background: #161618;
   --foreground: var(--color-role-dark-on-background);
   --card: var(--color-role-dark-surface-container-lowest);
   --card-foreground: var(--color-role-dark-on-surface);
-  --popover: var(--color-role-dark-surface-container-lowest);
+  --popover: #1f2127;
   --popover-foreground: var(--color-role-dark-on-surface);
   --primary: var(--color-role-dark-primary);
   --primary-foreground: var(--color-role-dark-on-primary);
   --secondary: var(--color-role-dark-secondary);
   --secondary-foreground: var(--color-role-dark-on-secondary);
   --muted: var(--color-role-dark-surface-container-low);
-  --muted-foreground: var(--color-role-dark-on-surface-variant);
+  --muted-foreground: #BCBFC8;
   --accent: var(--color-role-dark-tertiary-container);
   --accent-foreground: var(--color-role-dark-on-tertiary-container);
   --destructive: var(--color-role-dark-error);
@@ -188,7 +190,7 @@
   --chart-3: var(--color-role-dark-tertiary);
   --chart-4: var(--color-role-dark-outline);
   --chart-5: var(--color-role-dark-inverse-primary);
-  --sidebar: var(--color-role-dark-surface-container-lowest);
+  --sidebar: #131314;
   --sidebar-foreground: var(--color-role-dark-on-surface);
   --sidebar-primary: var(--color-role-dark-primary);
   --sidebar-primary-foreground: var(--color-role-dark-on-primary);

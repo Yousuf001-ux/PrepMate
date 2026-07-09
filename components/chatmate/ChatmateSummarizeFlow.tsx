@@ -158,7 +158,7 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
           Summarize a topic
         </h2>
 
-        <form onSubmit={(e) => { e.preventDefault(); handleGenerate(); }} className="w-full p-2 border border-muted-foreground/20 bg-surface rounded-full flex flex-row items-center gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
+        <form onSubmit={(e) => { e.preventDefault(); handleGenerate(); }} className="w-full p-2 border border-muted-foreground/20 bg-muted/30 dark:bg-input/30 rounded-full flex flex-row items-center gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
           <div className="relative">
             <input
               type="file"
@@ -169,7 +169,7 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
             />
             <Label
               htmlFor="file-upload"
-              className="cursor-pointer h-12 w-12 flex items-center justify-center bg-muted/50 hover:bg-muted text-muted-foreground rounded-xl transition-colors"
+              className="cursor-pointer h-12 w-12 flex items-center justify-center hover:bg-muted/20 text-muted-foreground rounded-xl transition-colors"
             >
               <Plus className="h-6 w-6" />
             </Label>
@@ -177,7 +177,7 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
 
           <Input
             autoFocus
-            className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-medium sm:text-body-large max-sm:text-sm pl-0 pr-4 h-14 truncate"
+            className="flex-1 border-0 bg-transparent dark:bg-transparent shadow-none focus-visible:ring-0 text-body-medium sm:text-body-large max-sm:text-sm pl-0 pr-4 h-14 truncate"
             placeholder={isMobile ? "What do you want summarized?" : "What topic do you want summarized?"}
             value={topic}
             onChange={(e) => setTopic(e.target.value)}

@@ -58,13 +58,13 @@ export default function QuizPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="w-full p-2 border border-muted-foreground/20 bg-surface rounded-full flex flex-row items-center gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
+      <form onSubmit={handleSubmit} className="w-full p-2 border border-muted-foreground/20 bg-muted/30 dark:bg-input/30 rounded-full flex flex-row items-center gap-0 focus-within:ring-3 focus-within:ring-ring/50 transition-all">
         <Input
           placeholder="e.g. World War II, Cell Biology..."
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           required
-          className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-body-medium sm:text-body-large pl-4 pr-4 h-14 truncate"
+          className="flex-1 border-0 bg-transparent dark:bg-transparent shadow-none focus-visible:ring-0 text-body-medium sm:text-body-large pl-4 pr-4 h-14 truncate"
         />
 
         <Button
