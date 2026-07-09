@@ -190,8 +190,8 @@ export function DashboardQuizView() {
                           const isWrongOpt = selectedAnswers[i] === opt && opt !== q.correctAnswer;
                           let optClass = "rounded-lg border border-muted-foreground/10 px-3 py-2.5 text-body-small text-left";
 
-                          if (isCorrectOpt) optClass += " border-green-500 bg-green-50 text-green-800";
-                          else if (isWrongOpt) optClass += " border-red-500 bg-red-50 text-red-800";
+                          if (isCorrectOpt) optClass += " border-green-500 bg-green-50 text-green-800 dark:bg-green-950/30 dark:text-green-400";
+                          else if (isWrongOpt) optClass += " border-red-500 bg-red-50 text-red-800 dark:bg-red-950/30 dark:text-red-400";
 
                           return (
                             <div key={j} className={optClass}>

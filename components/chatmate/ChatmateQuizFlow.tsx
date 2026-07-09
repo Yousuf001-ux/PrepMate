@@ -248,9 +248,9 @@ export function ChatmateQuizFlow({ onBack, quizId }: ChatmateQuizFlowProps) {
                             let optClass = "rounded-lg border border-muted-foreground/10 px-3 py-2.5 text-body-small text-left";
 
                             if (isCorrectOpt) {
-                              optClass += " border-green-500 bg-green-50 text-green-800";
+                              optClass += " border-green-500 bg-green-50 text-green-800 dark:bg-green-950/30 dark:text-green-400";
                             } else if (isWrongOpt) {
-                              optClass += " border-red-500 bg-red-50 text-red-800";
+                              optClass += " border-red-500 bg-red-50 text-red-800 dark:bg-red-950/30 dark:text-red-400";
                             }
 
                             return (
