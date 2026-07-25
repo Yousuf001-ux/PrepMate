@@ -1,6 +1,14 @@
 import { callDeepSeek } from "./client";
 import type { SummaryOutput } from "@/types";
 
+/**
+ * Generates an academic summary and key concept list for a topic using DeepSeek.
+ * Employs fallback logic for raw JSON regex extraction and handles typical LLM key deviations
+ * (e.g., matching 'key_concepts' or 'explanation' if the standard keys are missing).
+ *
+ * @param topic The topic title or raw reference text to summarize.
+ * @returns A promise resolving to the structured SummaryOutput.
+ */
 export async function generateSummary(topic: string): Promise<SummaryOutput> {
   const sanitisedTopic = topic.trim().slice(0, 15000);
 
@@ -27,14 +35,18 @@ IMPORTANT: Use double newlines (\\n\\n) between paragraphs to separate them clea
   try {
     parsed = JSON.parse(raw);
   } catch {
+    // Robustness: If the response is wrapped in markdown code blocks or has prefix text,
+    // attempt to extract the first complete JSON object block via regular expressions.
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Invalid summary output: non-JSON response from AI");
     parsed = JSON.parse(jsonMatch[0]);
   }
 
+  // Fallback normalization: If the model outputted another naming scheme for "summary"
   if (typeof parsed.summary !== "string" || !parsed.summary.trim()) {
     parsed.summary = (parsed.explanation || parsed.content || parsed.text || "") as string;
   }
+  // Fallback normalization: If "keyConcepts" was returned as a newline string or using snake_case
   if (!Array.isArray(parsed.keyConcepts)) {
     if (typeof parsed.keyConcepts === "string") {
       parsed.keyConcepts = parsed.keyConcepts.split("\n").map((s: string) => s.trim()).filter(Boolean);
@@ -53,6 +65,14 @@ IMPORTANT: Use double newlines (\\n\\n) between paragraphs to separate them clea
   return parsed as unknown as SummaryOutput;
 }
 
+/**
+ * Simplifies a study topic summary using child-friendly language.
+ * Instructs the LLM to occasionally use relatable Nigerian analogies for local context,
+ * making learning engaging and conceptually transparent.
+ *
+ * @param originalExplanation The complex summary or paragraph to simplify.
+ * @returns The simplified string in plain language.
+ */
 export async function simplifySummary(originalExplanation: string): Promise<string> {
   const sanitised = originalExplanation.trim().slice(0, 2000);
 

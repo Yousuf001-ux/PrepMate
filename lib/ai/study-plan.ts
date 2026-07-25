@@ -12,9 +12,18 @@ interface StudyPlanInput {
   startDate: string;
 }
 
+/**
+ * Generates a structured, balanced academic study plan using DeepSeek.
+ * Safely parses the student's courses and topics into XML tags to prevent prompt injection.
+ * Enforces scheduling constraints (e.g. daily limit, start/end boundaries, pre-exam buffer).
+ *
+ * @param input The configuration including courses list, available hours, and plan start date.
+ * @returns A promise resolving to a validated StudyPlanOutput with a list of study sessions.
+ */
 export async function generateStudyPlan(
   input: StudyPlanInput
 ): Promise<StudyPlanOutput> {
+  // Security: Wrap user-provided text in custom XML-like tags so the LLM distinguishes it from instructions.
   const sanitisedCourses = input.courses
     .map(
       (c) =>
@@ -60,6 +69,7 @@ Respond only with valid JSON matching this schema:
 
   const parsed = JSON.parse(raw);
 
+  // Validate the minimal output shape before saving to the database
   if (!parsed.sessions || !Array.isArray(parsed.sessions)) {
     throw new Error("Invalid study plan output: missing sessions array");
   }

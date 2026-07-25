@@ -37,6 +37,16 @@ export interface ParsedFile {
   fileName: string;
 }
 
+/**
+ * Parses uploaded files (PDF, Word Document/DOCX, or plain text) and extracts the raw textual contents.
+ * Performs character truncation up to a safe threshold (15,000 characters) to optimize prompt performance
+ * and avoid exceeding DeepSeek API content token limits.
+ *
+ * @param buffer Raw buffer containing the uploaded file content.
+ * @param mimeType The file MIME type (e.g. application/pdf, text/plain).
+ * @param originalName The original user file name with extension.
+ * @returns Object with parsed text string and the base filename (excluding extension).
+ */
 export async function parseFile(
   buffer: Buffer,
   mimeType: string,
@@ -44,19 +54,24 @@ export async function parseFile(
 ): Promise<ParsedFile> {
   let text: string;
 
+  // Branch file content parsing based on format MIME types.
   if (mimeType === "application/pdf") {
+    // PDF extraction is page-by-page. Text items are joined sequentially.
     text = await parsePdf(buffer);
   } else if (
     mimeType ===
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
   ) {
+    // DOCX extraction uses Mammoth to extract raw text paragraph-by-paragraph.
     text = await parseDocx(buffer);
   } else if (mimeType === "text/plain") {
+    // Text documents are directly read as UTF-8.
     text = parseTxt(buffer);
   } else {
     text = "";
   }
 
+  // Sanitize the file name by stripping the extension for clean DB title mapping.
   const fileName = originalName.replace(/\.[^/.]+$/, "");
 
   return { text, fileName };
