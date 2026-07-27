@@ -20,21 +20,14 @@ async function ensureWorker() {
   workerInitialized = true;
 }
 
-async function loadPdfWithFallback(data: Uint8Array) {
-  try {
-    await ensureWorker();
-    const pdfjs = await import("pdfjs-dist");
-    return await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
-  } catch {
-    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-    return await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
-  }
-}
+async function extractTextFromPdf(file: File): Promise<string> {
+  await ensureWorker();
+  const pdfjs = await import("pdfjs-dist");
 
-export async function extractTextFromPdf(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
   const data = new Uint8Array(arrayBuffer);
-  const doc = await loadPdfWithFallback(data);
+
+  const doc = await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
 
   const pages: string[] = [];
   for (let i = 1; i <= doc.numPages; i++) {
@@ -70,7 +63,14 @@ export async function prepareFileData(file: File | null): Promise<{
   const mimeType = getMimeType(file);
 
   if (mimeType === "application/pdf") {
-    return { extractedText: await extractTextFromPdf(file) };
+    try {
+      return { extractedText: await extractTextFromPdf(file) };
+    } catch {
+      return {
+        fileBase64: await readFileAsBase64(file),
+        fileType: "application/pdf",
+      };
+    }
   }
 
   return {
