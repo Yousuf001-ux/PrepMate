@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { completeOnboarding } from "@/actions/onboarding";
-import { prepareFileData } from "@/lib/client-pdf";
+import { prepareFileData, validateFileSize } from "@/lib/client-pdf";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -28,8 +28,14 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
       const validTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain", "image/png", "image/jpeg"];
-      if (!validTypes.includes(selectedFile.type)) {
+      const ext = selectedFile.name.split(".").pop()?.toLowerCase();
+      const validExts = ["pdf", "docx", "txt", "png", "jpg", "jpeg"];
+      if (!validTypes.includes(selectedFile.type) && !validExts.includes(ext || "")) {
         toast.error("Unsupported file format.");
+        return;
+      }
+      if (!validateFileSize(selectedFile)) {
+        toast.error("File is too large. Maximum size is 10 MB.");
         return;
       }
       setFile(selectedFile);
@@ -71,7 +77,8 @@ export function GenerateQuizFlow({ onBack }: GenerateQuizFlowProps) {
       }
     } catch (error) {
       console.error(error);
-      toast.error("An unexpected error occurred");
+      const message = error instanceof Error ? error.message : "An unexpected error occurred";
+      toast.error(message);
       setIsProcessing(false);
     }
   };

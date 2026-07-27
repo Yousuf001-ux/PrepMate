@@ -39,12 +39,13 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
       const validTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain", "image/png", "image/jpeg"];
-      const MAX_FILE_SIZE = 10 * 1024 * 1024;
-      if (!validTypes.includes(selectedFile.type)) {
+      const ext = selectedFile.name.split(".").pop()?.toLowerCase();
+      const validExts = ["pdf", "docx", "txt", "png", "jpg", "jpeg"];
+      if (!validTypes.includes(selectedFile.type) && !validExts.includes(ext || "")) {
         toast.error("Unsupported file format.");
         return;
       }
-      if (selectedFile.size > MAX_FILE_SIZE) {
+      if (selectedFile.size > 10 * 1024 * 1024) {
         toast.error("File is too large. Maximum size is 10 MB.");
         return;
       }
@@ -78,7 +79,8 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
       }
     } catch (error) {
       console.error(error);
-      toast.error("An unexpected error occurred");
+      const message = error instanceof Error ? error.message : "An unexpected error occurred";
+      toast.error(message);
       setIsProcessing(false);
     }
   };

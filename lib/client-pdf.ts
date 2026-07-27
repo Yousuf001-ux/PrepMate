@@ -1,22 +1,23 @@
 const MAX_TEXT_LENGTH = 15000;
 
-let workerInitialized = false;
-
-async function ensureWorker() {
-  if (workerInitialized) return;
-  const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-  workerInitialized = true;
+function getMimeType(file: File): string {
+  if (file.type) return file.type;
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  if (ext === "pdf") return "application/pdf";
+  if (ext === "docx") return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  if (ext === "txt") return "text/plain";
+  if (ext === "png") return "image/png";
+  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+  return "";
 }
 
 export async function extractTextFromPdf(file: File): Promise<string> {
-  await ensureWorker();
   const pdfjs = await import("pdfjs-dist");
 
   const arrayBuffer = await file.arrayBuffer();
   const data = new Uint8Array(arrayBuffer);
 
-  const doc = await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
+  const doc = await pdfjs.getDocument({ data, useSystemFonts: true, isEvalSupported: false }).promise;
 
   const pages: string[] = [];
   for (let i = 1; i <= doc.numPages; i++) {
@@ -49,12 +50,18 @@ export async function prepareFileData(file: File | null): Promise<{
 }> {
   if (!file) return {};
 
-  if (file.type === "application/pdf") {
+  const mimeType = getMimeType(file);
+
+  if (mimeType === "application/pdf") {
     return { extractedText: await extractTextFromPdf(file) };
   }
 
   return {
     fileBase64: await readFileAsBase64(file),
-    fileType: file.type,
+    fileType: mimeType || file.type,
   };
+}
+
+export function validateFileSize(file: File, maxBytes = 10 * 1024 * 1024): boolean {
+  return file.size <= maxBytes;
 }
