@@ -9,6 +9,28 @@ function truncate(text: string): string {
 }
 
 async function parsePdf(buffer: Buffer): Promise<string> {
+  if (typeof globalThis.DOMMatrix === "undefined") {
+    (globalThis as any).DOMMatrix = class DOMMatrix {
+      constructor() {}
+      static fromMatrix() { return new DOMMatrix(); }
+      multiply() { return new DOMMatrix(); }
+      translate() { return new DOMMatrix(); }
+      scale() { return new DOMMatrix(); }
+      rotate() { return new DOMMatrix(); }
+      invert() { return new DOMMatrix(); }
+      toString() { return ""; }
+    };
+  }
+  if (typeof globalThis.Path2D === "undefined") {
+    (globalThis as any).Path2D = class Path2D {
+      constructor() {}
+      addPath() {}
+      closePath() {}
+      moveTo() {}
+      lineTo() {}
+    };
+  }
+
   // @ts-expect-error — pdfjs-dist subpath has no type declarations
   const pdfjs = await import("pdfjs-dist/build/pdf.mjs");
   const data = new Uint8Array(buffer);

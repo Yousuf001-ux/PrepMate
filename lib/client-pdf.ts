@@ -15,6 +15,12 @@ let workerInitialized = false;
 
 async function ensureWorker() {
   if (workerInitialized) return;
+
+  try {
+    const workerModule = await import("pdfjs-dist/build/pdf.worker.mjs");
+    (globalThis as any).pdfjsWorker = workerModule;
+  } catch {}
+
   const pdfjs = await import("pdfjs-dist");
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
   workerInitialized = true;
