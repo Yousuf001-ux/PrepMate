@@ -11,7 +11,17 @@ function getMimeType(file: File): string {
   return "";
 }
 
+let workerInitialized = false;
+
+async function ensureWorker() {
+  if (workerInitialized) return;
+  const pdfjs = await import("pdfjs-dist");
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  workerInitialized = true;
+}
+
 export async function extractTextFromPdf(file: File): Promise<string> {
+  await ensureWorker();
   const pdfjs = await import("pdfjs-dist");
 
   const arrayBuffer = await file.arrayBuffer();
