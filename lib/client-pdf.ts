@@ -20,14 +20,21 @@ async function ensureWorker() {
   workerInitialized = true;
 }
 
-export async function extractTextFromPdf(file: File): Promise<string> {
-  await ensureWorker();
-  const pdfjs = await import("pdfjs-dist");
+async function loadPdfWithFallback(data: Uint8Array) {
+  try {
+    await ensureWorker();
+    const pdfjs = await import("pdfjs-dist");
+    return await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
+  } catch {
+    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    return await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
+  }
+}
 
+export async function extractTextFromPdf(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
   const data = new Uint8Array(arrayBuffer);
-
-  const doc = await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
+  const doc = await loadPdfWithFallback(data);
 
   const pages: string[] = [];
   for (let i = 1; i <= doc.numPages; i++) {
