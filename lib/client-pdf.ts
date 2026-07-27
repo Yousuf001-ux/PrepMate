@@ -17,6 +17,7 @@ async function ensureWorker() {
   if (workerInitialized) return;
 
   try {
+    // @ts-expect-error — pdfjs-dist subpath has no type declarations
     const workerModule = await import("pdfjs-dist/build/pdf.worker.mjs");
     (globalThis as any).pdfjsWorker = workerModule;
   } catch {}
