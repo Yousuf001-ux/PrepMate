@@ -142,7 +142,8 @@ export async function chatmateSummarize(topic: string, fileName?: string, fileBa
     return { success: true as const, data: { id: summary.id, title, explanation: aiSummary.summary, keyConcepts: aiSummary.keyConcepts } };
   } catch (error) {
     console.error("[chatmate-summarize]", error);
-    return { success: false as const, error: "Unable to generate summary. Try again." };
+    const msg = error instanceof Error ? error.message : String(error);
+    return { success: false as const, error: `Unable to generate summary: ${msg}` };
   }
 }
 
@@ -196,6 +197,7 @@ export async function chatmateQuiz(topic: string, questionCount: number, fileNam
     return { success: true as const, data: result };
   } catch (error) {
     console.error("[chatmate-quiz]", error);
-    return { success: false as const, error: "Unable to generate quiz. Try again." };
+    const msg = error instanceof Error ? error.message : String(error);
+    return { success: false as const, error: `Unable to generate quiz: ${msg}` };
   }
 }
