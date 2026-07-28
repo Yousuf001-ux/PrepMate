@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { completeOnboarding } from "@/actions/onboarding";
-import { prepareFileData } from "@/lib/client-pdf";
+import { prepareFileData, validateFileSize } from "@/lib/client-pdf";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -40,7 +40,7 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
         toast.error("Unsupported file format.");
         return;
       }
-      if (selectedFile.size > 10 * 1024 * 1024) {
+      if (!validateFileSize(selectedFile)) {
         toast.error("File is too large. Maximum size is 10 MB.");
         return;
       }

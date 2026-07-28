@@ -31,8 +31,7 @@ function truncate(text: string): string {
 }
 
 async function parsePdf(buffer: Buffer): Promise<string> {
-  // @ts-expect-error — pdfjs-dist subpath has no type declarations
-  const pdfjs = await import("pdfjs-dist/build/pdf.mjs");
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const data = new Uint8Array(buffer);
   const doc = await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
   const pages = [];

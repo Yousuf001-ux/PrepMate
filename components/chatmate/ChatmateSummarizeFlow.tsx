@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { chatmateSummarize } from "@/actions/chatmate-tools";
-import { prepareFileData } from "@/lib/client-pdf";
+import { prepareFileData, validateFileSize } from "@/lib/client-pdf";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
@@ -45,7 +45,7 @@ export function ChatmateSummarizeFlow({ onBack }: ChatmateSummarizeFlowProps) {
         toast.error("Unsupported file format.");
         return;
       }
-      if (selectedFile.size > 10 * 1024 * 1024) {
+      if (!validateFileSize(selectedFile)) {
         toast.error("File is too large. Maximum size is 10 MB.");
         return;
       }
