@@ -1,24 +1,15 @@
 const MAX_TEXT_LENGTH = 15000;
 
-if (typeof globalThis.DOMMatrix === "undefined") {
-  (globalThis as any).DOMMatrix = class DOMMatrix {
-    constructor() {}
-    static fromMatrix() { return new DOMMatrix(); }
-    multiply() { return new DOMMatrix(); }
-    translate() { return new DOMMatrix(); }
-    scale() { return new DOMMatrix(); }
-    rotate() { return new DOMMatrix(); }
-    invert() { return new DOMMatrix(); }
-    toString() { return ""; }
-  };
-}
-if (typeof globalThis.Path2D === "undefined") {
-  (globalThis as any).Path2D = class Path2D {
-    constructor() {}
-    addPath() {}
-    closePath() {}
-    moveTo() {}
-    lineTo() {}
+// Uint8Array.prototype.toHex polyfill — pdfjs-dist v6 standard build doesn't include it
+// but requires it for hash operations. Legacy build has it but fails on Vercel.
+// https://tc39.es/proposal-arraybuffer-base64/
+if (!(Uint8Array.prototype as any).toHex) {
+  (Uint8Array.prototype as any).toHex = function toHex(this: Uint8Array): string {
+    const hex: string[] = [];
+    for (let i = 0; i < this.length; i++) {
+      hex.push(this[i].toString(16).padStart(2, "0"));
+    }
+    return hex.join("");
   };
 }
 
@@ -31,7 +22,21 @@ function truncate(text: string): string {
 }
 
 async function parsePdf(buffer: Buffer): Promise<string> {
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  // Pre-import worker and set on globalThis so pdfjs uses it as fake worker
+  // (same pattern as lib/client-pdf.ts). Prevents pdfjs from trying to dynamically
+  // import the worker file on Vercel, where it may not be bundled.
+  try {
+    // @ts-expect-error — pdfjs-dist subpath has no type declarations
+    const workerModule = await import("pdfjs-dist/build/pdf.worker.mjs");
+    (globalThis as any).pdfjsWorker = workerModule;
+  } catch {
+    // If worker module can't be imported, rely on fake worker fallback in pdfjs
+  }
+
+  // @ts-expect-error — pdfjs-dist subpath has no type declarations
+  const pdfjs = await import("pdfjs-dist/build/pdf.mjs");
+  pdfjs.GlobalWorkerOptions.workerSrc = "";
+
   const data = new Uint8Array(buffer);
   const doc = await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
   const pages = [];
