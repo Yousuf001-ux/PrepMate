@@ -1,7 +1,32 @@
 const MAX_TEXT_LENGTH = 15000;
 
-// Uint8Array.prototype.toHex polyfill — pdfjs-dist v6 standard build doesn't include it
-// but requires it for hash operations. Legacy build has it but fails on Vercel.
+// pdfjs-dist v6 standard build (build/pdf.mjs) expects browser APIs that don't
+// exist in Node.js. Provide minimal polyfills here at module scope so they're
+// available before any pdfjs-dist import evaluates.
+if (typeof globalThis.DOMMatrix === "undefined") {
+  (globalThis as any).DOMMatrix = class DOMMatrix {
+    constructor() {}
+    static fromMatrix() { return new DOMMatrix(); }
+    multiply() { return new DOMMatrix(); }
+    translate() { return new DOMMatrix(); }
+    scale() { return new DOMMatrix(); }
+    rotate() { return new DOMMatrix(); }
+    invert() { return new DOMMatrix(); }
+    toString() { return ""; }
+  };
+}
+if (typeof globalThis.Path2D === "undefined") {
+  (globalThis as any).Path2D = class Path2D {
+    constructor() {}
+    addPath() {}
+    closePath() {}
+    moveTo() {}
+    lineTo() {}
+  };
+}
+
+// Uint8Array.prototype.toHex polyfill — pdfjs-dist v6 standard build expects this
+// TC39 method but doesn't include a polyfill itself.
 // https://tc39.es/proposal-arraybuffer-base64/
 if (!(Uint8Array.prototype as any).toHex) {
   (Uint8Array.prototype as any).toHex = function toHex(this: Uint8Array): string {
