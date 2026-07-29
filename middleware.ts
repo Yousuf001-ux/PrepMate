@@ -38,12 +38,9 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
     "/chatmate/:path*",
     "/courses/:path*",
     "/study-plan/:path*",
-    "/summarizer/:path*",
-    "/quiz/:path*",
     "/progress/:path*",
     "/onboarding",
     "/api/courses/:path*",
