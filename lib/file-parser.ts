@@ -80,6 +80,13 @@ async function parseDocx(buffer: Buffer): Promise<string> {
   return truncate(stripBom(result.value));
 }
 
+async function parsePptx(buffer: Buffer): Promise<string> {
+  const { OfficeParser } = await import("officeparser");
+  const ast = await OfficeParser.parseOffice(buffer, { ignoreSlideMasters: true });
+  const text = ast.toText();
+  return truncate(stripBom(text));
+}
+
 function parseTxt(buffer: Buffer): string {
   return truncate(stripBom(buffer.toString("utf-8")));
 }
@@ -116,6 +123,11 @@ export async function parseFile(
   ) {
     // DOCX extraction uses Mammoth to extract raw text paragraph-by-paragraph.
     text = await parseDocx(buffer);
+  } else if (
+    mimeType ===
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+  ) {
+    text = await parsePptx(buffer);
   } else if (mimeType === "text/plain") {
     // Text documents are directly read as UTF-8.
     text = parseTxt(buffer);

@@ -33,9 +33,9 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
-      const validTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain", "image/png", "image/jpeg"];
+      const validTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "text/plain", "image/png", "image/jpeg"];
       const ext = selectedFile.name.split(".").pop()?.toLowerCase();
-      const validExts = ["pdf", "docx", "txt", "png", "jpg", "jpeg"];
+      const validExts = ["pdf", "docx", "pptx", "txt", "png", "jpg", "jpeg"];
       if (!validTypes.includes(selectedFile.type) && !validExts.includes(ext || "")) {
         toast.error("Unsupported file format.");
         return;
@@ -114,7 +114,7 @@ export function SummarizeTopicFlow({ onBack }: SummarizeTopicFlowProps) {
               type="file" 
               id="file-upload" 
               className="hidden" 
-              accept=".pdf,.docx,.txt,image/png,image/jpeg"
+              accept=".pdf,.docx,.pptx,.txt,image/png,image/jpeg"
               onChange={handleFileChange}
             />
             <Label 

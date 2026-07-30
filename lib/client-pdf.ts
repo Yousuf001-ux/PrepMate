@@ -5,6 +5,7 @@ function getMimeType(file: File): string {
   const ext = file.name.split(".").pop()?.toLowerCase();
   if (ext === "pdf") return "application/pdf";
   if (ext === "docx") return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  if (ext === "pptx") return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
   if (ext === "txt") return "text/plain";
   if (ext === "png") return "image/png";
   if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
