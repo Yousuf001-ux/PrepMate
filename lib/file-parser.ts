@@ -81,10 +81,24 @@ async function parseDocx(buffer: Buffer): Promise<string> {
 }
 
 async function parsePptx(buffer: Buffer): Promise<string> {
-  const { OfficeParser } = await import("officeparser");
-  const ast = await OfficeParser.parseOffice(buffer, { ignoreSlideMasters: true });
-  const text = ast.toText();
-  return truncate(stripBom(text));
+  const JSZip = (await import("jszip")).default;
+  const zip = await JSZip.loadAsync(buffer);
+  const slides: string[] = [];
+  const slideFiles = Object.keys(zip.files)
+    .filter((name) => name.startsWith("ppt/slides/slide") && name.endsWith(".xml"))
+    .sort();
+  for (const file of slideFiles) {
+    const xml = await zip.files[file].async("text");
+    const texts: string[] = [];
+    const regex = /<a:t[^>]*>([^<]*)<\/a:t>/g;
+    let match;
+    while ((match = regex.exec(xml)) !== null) {
+      const content = match[1].trim();
+      if (content) texts.push(content);
+    }
+    if (texts.length) slides.push(texts.join(" "));
+  }
+  return truncate(stripBom(slides.join("\n")));
 }
 
 function parseTxt(buffer: Buffer): string {
