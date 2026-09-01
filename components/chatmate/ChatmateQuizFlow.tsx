@@ -488,7 +488,7 @@ export function ChatmateQuizFlow({ onBack, quizId }: ChatmateQuizFlowProps) {
   );
 }
 
-const options = [5, 10, 15, 20, 25, 30];
+const options = [20, 40, 60, 80, 100];
 
 interface QuestionCountDropdownProps {
   value: number | "";

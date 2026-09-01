@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const QuizSchema = z.object({
   topic: z.string().min(1).max(500),
-  numQuestions: z.number().min(3).max(20).optional().default(5),
+  numQuestions: z.number().min(3).max(100).optional().default(5),
   topicId: z.string().uuid().optional(),
 });
 

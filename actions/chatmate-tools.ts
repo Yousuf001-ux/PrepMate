@@ -30,7 +30,7 @@ const SummarizeTopicDataSchema = z.object({
 
 const GenerateQuizDataSchema = z.object({
   topic: z.string().min(1),
-  questionCount: z.number().min(5).max(50),
+  questionCount: z.number().min(5).max(100),
   fileName: z.string().optional(),
   fileBase64: z.string().optional(),
   fileType: z.string().optional(),
