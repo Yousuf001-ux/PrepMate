@@ -37,7 +37,8 @@ export class DeepSeekError extends Error {
  */
 export async function callDeepSeek(
   messages: DeepSeekMessage[],
-  retries = 2
+  retries = 2,
+  timeoutMs = 30000
 ): Promise<string> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
 
@@ -69,7 +70,7 @@ export async function callDeepSeek(
           response_format: { type: "json_object" },
         }),
         // Safety: Prevent hanging connections by timing out after 30 seconds
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(timeoutMs),
       });
 
       if (!response.ok) {

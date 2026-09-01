@@ -30,10 +30,16 @@ Respond only with valid JSON matching this schema:
   ]
 }`;
 
-  const raw = await callDeepSeek([
-    { role: "system", content: "You are a quiz generator. Always respond with valid JSON." },
-    { role: "user", content: prompt },
-  ]);
+  const timeoutMs = numQ <= 20 ? 30000 : numQ <= 50 ? 60000 : 120000;
+
+  const raw = await callDeepSeek(
+    [
+      { role: "system", content: "You are a quiz generator. Always respond with valid JSON." },
+      { role: "user", content: prompt },
+    ],
+    2,
+    timeoutMs
+  );
 
   const parsed = JSON.parse(raw);
 
