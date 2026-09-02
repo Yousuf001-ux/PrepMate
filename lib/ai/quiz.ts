@@ -20,11 +20,23 @@ const MEDICAL_HINTS = [
   "surgeon", "operation", "vital signs", "blood pressure", "pulse", "respiration",
 ];
 
+const MEDICAL_SUBJECTS = [
+  "pathology", "microbiology", "anatomy", "physiology", "biochemistry",
+  "medicine", "internal medicine", "general medicine", "surgery", "pediatrics",
+  "obstetrics", "gynecology", "haematology", "neurology", "cardiology",
+  "nephrology", "pulmonology", "dermatology", "endocrinology", "gastroenterology",
+  "psychiatry", "radiology", "pharmacology", "medical", "clinical", "health",
+];
+
 function isMedical(content: string): boolean {
   const lower = content.toLowerCase();
   let score = 0;
   for (const hint of MEDICAL_HINTS) {
     if (lower.includes(hint)) score++;
+  }
+  // A clearly medical subject (e.g. "pathology", "microbiology") alone is enough
+  for (const subject of MEDICAL_SUBJECTS) {
+    if (lower.includes(subject)) return true;
   }
   return score >= 2;
 }
@@ -32,7 +44,7 @@ function isMedical(content: string): boolean {
 export async function generateQuiz(input: QuizInput): Promise<QuizOutput> {
   const sanitisedTopic = input.topic.trim().slice(0, 2000);
   const numQ = Math.min(Math.max(input.numQuestions, 3), 100);
-  const medical = isMedical(sanitisedTopic);
+  const medical = isMedical(input.topic);
 
   const prompt = medical
     ? medicalQuizPrompt(numQ, sanitisedTopic)
