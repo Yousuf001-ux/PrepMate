@@ -71,32 +71,54 @@ export async function generateQuiz(input: QuizInput): Promise<QuizOutput> {
 }
 
 function parseQuizJson(raw: string): unknown {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    // DeepSeek can echo raw control characters (newlines, tabs) inside string
-    // values, which breaks strict JSON parsing. Escape them and retry.
-    const cleaned = raw
-      .replace(/\r\n/g, "\\n")
-      .replace(/\r/g, "\\n")
-      .replace(/\t/g, "\\t");
+  // Strip markdown code fences if present
+  let text = raw.trim();
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fenceMatch) text = fenceMatch[1].trim();
+
+  const attempt = (candidate: string): unknown | null => {
     try {
-      return JSON.parse(cleaned);
+      return JSON.parse(candidate);
     } catch {
-      // Last resort: strip all remaining unescaped control characters.
-      const stripped = cleaned.replace(/[\u0000-\u001f\u007f]/g, (ch) => {
-        switch (ch) {
-          case "\b": return "\\b";
-          case "\f": return "\\f";
-          case "\n": return "\\n";
-          case "\r": return "\\r";
-          case "\t": return "\\t";
-          default: return "";
-        }
-      });
-      return JSON.parse(stripped);
+      return null;
     }
+  };
+
+  // 1. Direct parse
+  const direct = attempt(text);
+  if (direct) return direct;
+
+  // 2. Extract the first complete JSON object block
+  const objMatch = text.match(/\{[\s\S]*\}/);
+  if (objMatch) {
+    const extracted = attempt(objMatch[0]);
+    if (extracted) return extracted;
   }
+
+  // 3. DeepSeek can echo raw control characters (newlines, tabs) inside string
+  //    values, which breaks strict JSON parsing. Normalize and retry.
+  const cleaned = text
+    .replace(/\r\n/g, "\\n")
+    .replace(/\r/g, "\\n")
+    .replace(/\t/g, "\\t");
+  const fromCleaned = attempt(cleaned) || attempt(cleaned.match(/\{[\s\S]*\}/)?.[0] ?? "");
+  if (fromCleaned) return fromCleaned;
+
+  // Last resort: strip all remaining unescaped control characters.
+  const stripped = cleaned.replace(/[\u0000-\u001f\u007f]/g, (ch) => {
+    switch (ch) {
+      case "\b": return "\\b";
+      case "\f": return "\\f";
+      case "\n": return "\\n";
+      case "\r": return "\\r";
+      case "\t": return "\\t";
+      default: return "";
+    }
+  });
+  const fromStripped = attempt(stripped) || attempt(stripped.match(/\{[\s\S]*\}/)?.[0] ?? "");
+  if (fromStripped) return fromStripped;
+
+  throw new Error("Invalid quiz output: non-JSON response from AI");
 }
 
 function standardQuizPrompt(numQ: number, topic: string): string {
