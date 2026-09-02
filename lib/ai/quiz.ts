@@ -189,30 +189,24 @@ function medicalQuizPrompt(numQ: number, content: string): string {
 ${content}
 </user_content>
 
-Follow the clinical MCQ (SBA) format for EVERY question:
+Apply the Single Best Answer (SBA) / One-Best-Answer format to EVERY question: provide 4 to 5 options (lettered A to E) where only one option is indisputably the best. The distractors are plausible but clearly less correct (similar-looking conditions, shared symptoms, or incorrect steps in management). Options must be homogeneous: if the correct answer is a disease, all options are diseases; if it is a medication, all options are medications.
 
-1. Each question must contain a clinical vignette (the Stem): a short paragraph describing a patient, including demographics (age, sex), setting/presentation, history of present illness, duration, and key physical or laboratory findings.
+Vary the question type to test both applied and recall knowledge, based on what the material covers:
+- Clinical vignette questions: a short stem describing a patient (demographics, presentation, history, key findings) followed by an application or decision-making lead-in, e.g. "What is the most likely diagnosis?", "Which of the following is the most appropriate next step in management?", "What is the underlying mechanism of this patient's condition?"
+- Direct knowledge / recall questions: test a specific fact, value, definition, or mechanism relevant to the material, e.g. "What is the reference range for ...?", "Which of the following becomes ... in tissues?", "The antibody most implicated in ... is".
+- Negative questions: use "all of the following except", "the following are ... except", or "which of the following is NOT ..." phrasing, where the single best answer is the option that does NOT fit.
+- True/false-style: "All of the following are true about ... except", where all but one statement is correct.
 
-2. The Lead-in must test application or decision-making, not trivial recall. Use phrasing such as:
-   - "What is the most likely diagnosis?"
-   - "Which of the following is the most appropriate next step in management?"
-   - "What is the underlying mechanism of this patient's condition?"
-   - "Which of the following enzymes/pathways is most likely affected?"
-
-3. Exactly 5 options (A to E). One correct answer (the single best answer); the distractors are plausible but clearly less correct (similar conditions, shared symptoms, or incorrect management steps).
-
-4. Options must be homogeneous: if the correct answer is a disease, all options are diseases; if it is a medication, all options are medications.
-
-5. Include a brief explanation of why the correct answer is best and why the others are wrong.
+Write each option as plain text WITHOUT any "A.", "B.", "C.", "D.", "E." letter prefixes (the letters are added automatically). Include a brief explanation of why the correct answer is best and why the others are wrong.
 
 Respond only with valid JSON matching this schema:
 {
   "questions": [
     {
-      "question": "A 45-year-old man comes to the clinic with 3 months of fatigue, thirst, and frequent urination. ... Which of the following is the most likely diagnosis?",
-      "options": ["A. ...", "B. ...", "C. ...", "D. ...", "E. ..."],
-      "correctAnswer": "A. ...",
-      "explanation": "Brief explanation"
+      "question": "The question text, either a clinical vignette with a lead-in or a direct recall/negative-format question.",
+      "options": ["Option 1", "Option 2", "Option 3", "Option 4", "Option 5"],
+      "correctAnswer": "Option 1",
+      "explanation": "Brief explanation of why this is the single best answer"
     }
   ]
 }`;
