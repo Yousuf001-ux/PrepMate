@@ -61,13 +61,42 @@ export async function generateQuiz(input: QuizInput): Promise<QuizOutput> {
     timeoutMs
   );
 
-  const parsed = JSON.parse(raw);
+  const parsed = parseQuizJson(raw) as QuizOutput | null;
 
-  if (!parsed.questions || !Array.isArray(parsed.questions)) {
+  if (!parsed?.questions || !Array.isArray(parsed.questions)) {
     throw new Error("Invalid quiz output: missing questions array");
   }
 
   return parsed as QuizOutput;
+}
+
+function parseQuizJson(raw: string): unknown {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    // DeepSeek can echo raw control characters (newlines, tabs) inside string
+    // values, which breaks strict JSON parsing. Escape them and retry.
+    const cleaned = raw
+      .replace(/\r\n/g, "\\n")
+      .replace(/\r/g, "\\n")
+      .replace(/\t/g, "\\t");
+    try {
+      return JSON.parse(cleaned);
+    } catch {
+      // Last resort: strip all remaining unescaped control characters.
+      const stripped = cleaned.replace(/[\u0000-\u001f\u007f]/g, (ch) => {
+        switch (ch) {
+          case "\b": return "\\b";
+          case "\f": return "\\f";
+          case "\n": return "\\n";
+          case "\r": return "\\r";
+          case "\t": return "\\t";
+          default: return "";
+        }
+      });
+      return JSON.parse(stripped);
+    }
+  }
 }
 
 function standardQuizPrompt(numQ: number, topic: string): string {

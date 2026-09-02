@@ -1,6 +1,25 @@
 import { callDeepSeek } from "./client";
 import type { SummaryOutput } from "@/types";
 
+// DeepSeek can echo raw control characters (newlines, tabs) inside string
+// values, which breaks strict JSON parsing. Normalize them before parsing.
+function cleanControlChars(text: string): string {
+  return text
+    .replace(/\r\n/g, "\\n")
+    .replace(/\r/g, "\\n")
+    .replace(/\t/g, "\\t")
+    .replace(/[\u0000-\u001f\u007f]/g, (ch) => {
+      switch (ch) {
+        case "\b": return "\\b";
+        case "\f": return "\\f";
+        case "\n": return "\\n";
+        case "\r": return "\\r";
+        case "\t": return "\\t";
+        default: return "";
+      }
+    });
+}
+
 /**
  * Generates an academic summary and key concept list for a topic using DeepSeek.
  * Employs fallback logic for raw JSON regex extraction and handles typical LLM key deviations
@@ -33,13 +52,13 @@ IMPORTANT: Use double newlines (\\n\\n) between paragraphs to separate them clea
 
   let parsed: Record<string, unknown>;
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(cleanControlChars(raw));
   } catch {
     // Robustness: If the response is wrapped in markdown code blocks or has prefix text,
     // attempt to extract the first complete JSON object block via regular expressions.
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Invalid summary output: non-JSON response from AI");
-    parsed = JSON.parse(jsonMatch[0]);
+    parsed = JSON.parse(cleanControlChars(jsonMatch[0]));
   }
 
   // Fallback normalization: If the model outputted another naming scheme for "summary"
@@ -94,7 +113,7 @@ IMPORTANT: Use double newlines (\\n\\n) between paragraphs to separate them clea
     { role: "user", content: prompt },
   ]);
 
-  const parsed = JSON.parse(raw);
+  const parsed = JSON.parse(cleanControlChars(raw));
 
   if (!parsed.simplified) {
     throw new Error("Invalid simplified output: missing simplified field");
