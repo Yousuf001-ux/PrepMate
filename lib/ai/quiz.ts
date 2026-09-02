@@ -50,7 +50,7 @@ export async function generateQuiz(input: QuizInput): Promise<QuizOutput> {
     ? medicalQuizPrompt(numQ, sanitisedTopic)
     : standardQuizPrompt(numQ, sanitisedTopic);
 
-  const timeoutMs = numQ <= 20 ? 30000 : numQ <= 50 ? 60000 : 120000;
+  const timeoutMs = numQ <= 20 ? 60000 : numQ <= 50 ? 90000 : 180000;
 
   const raw = await callDeepSeek(
     [
