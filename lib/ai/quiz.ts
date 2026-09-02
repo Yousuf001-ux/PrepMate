@@ -191,11 +191,12 @@ ${content}
 
 Apply the Single Best Answer (SBA) / One-Best-Answer format to EVERY question: provide 4 to 5 options (lettered A to E) where only one option is indisputably the best. The distractors are plausible but clearly less correct (similar-looking conditions, shared symptoms, or incorrect steps in management). Options must be homogeneous: if the correct answer is a disease, all options are diseases; if it is a medication, all options are medications.
 
-Vary the question type to test both applied and recall knowledge, based on what the material covers:
-- Clinical vignette questions: a short stem describing a patient (demographics, presentation, history, key findings) followed by an application or decision-making lead-in, e.g. "What is the most likely diagnosis?", "Which of the following is the most appropriate next step in management?", "What is the underlying mechanism of this patient's condition?"
+Vary the question type to test recall and applied knowledge, based on what the material covers:
 - Direct knowledge / recall questions: test a specific fact, value, definition, or mechanism relevant to the material, e.g. "What is the reference range for ...?", "Which of the following becomes ... in tissues?", "The antibody most implicated in ... is".
 - Negative questions: use "all of the following except", "the following are ... except", or "which of the following is NOT ..." phrasing, where the single best answer is the option that does NOT fit.
 - True/false-style: "All of the following are true about ... except", where all but one statement is correct.
+
+Do NOT write patient-case vignette questions that begin with a patient's age, gender, and presenting complaint (e.g. "A 45-year-old man comes to the clinic with ..."). Ask the question directly instead.
 
 Write each option as plain text WITHOUT any "A.", "B.", "C.", "D.", "E." letter prefixes (the letters are added automatically). Include a brief explanation of why the correct answer is best and why the others are wrong.
 
