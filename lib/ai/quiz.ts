@@ -41,24 +41,63 @@ function isMedical(content: string): boolean {
   return score >= 2;
 }
 
+const CHUNK_SIZE = 10;
+const CHUNK_TIMEOUT = 60000;
+
 export async function generateQuiz(input: QuizInput): Promise<QuizOutput> {
   const sanitisedTopic = input.topic.trim().slice(0, 2000);
   const numQ = Math.min(Math.max(input.numQuestions, 3), 100);
   const medical = isMedical(input.topic);
 
-  const prompt = medical
-    ? medicalQuizPrompt(numQ, sanitisedTopic)
-    : standardQuizPrompt(numQ, sanitisedTopic);
+  // Split the requested number of questions into smaller chunks and run them in
+  // parallel. Each chunk is a fast, independent DeepSeek call, so large quizzes
+  // (up to 100 questions) don't hit a single-request timeout.
+  const chunks: number[] = [];
+  for (let remaining = numQ; remaining > 0; remaining -= CHUNK_SIZE) {
+    chunks.push(Math.min(CHUNK_SIZE, remaining));
+  }
 
-  const timeoutMs = numQ <= 20 ? 60000 : numQ <= 50 ? 90000 : 180000;
+  const results = await runWithConcurrency(
+    chunks.map((size) => () => generateChunk(size, sanitisedTopic, medical)),
+    2
+  );
+
+  const questions = results.flatMap((r) => r.questions);
+
+  if (questions.length === 0) {
+    throw new Error("Invalid quiz output: no questions generated");
+  }
+
+  return { questions };
+}
+
+async function runWithConcurrency<T>(tasks: (() => Promise<T>)[], concurrency: number): Promise<T[]> {
+  const results: T[] = new Array(tasks.length);
+  let next = 0;
+
+  async function worker() {
+    while (next < tasks.length) {
+      const index = next++;
+      results[index] = await tasks[index]();
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, worker));
+  return results;
+}
+
+async function generateChunk(size: number, topic: string, medical: boolean): Promise<QuizOutput> {
+  const prompt = medical
+    ? medicalQuizPrompt(size, topic)
+    : standardQuizPrompt(size, topic);
 
   const raw = await callDeepSeek(
     [
-      { role: "system", content: "You are a medical quiz generator. Always respond with valid JSON." },
+      { role: "system", content: "You are a quiz generator. Always respond with valid JSON." },
       { role: "user", content: prompt },
     ],
     2,
-    timeoutMs
+    CHUNK_TIMEOUT
   );
 
   const parsed = parseQuizJson(raw) as QuizOutput | null;
